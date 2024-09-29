@@ -27,5 +27,6 @@
   </form>
   <section id="greeting">{greeting}</section>
 
+  <a href="/about">About</a>
 </main>
  
