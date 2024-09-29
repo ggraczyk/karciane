@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "karciane_backend": {
+      "declarations": {
+        "node_compatibility": true
+      },
+      "main": "src/karciane_backend/main.mo",
+      "type": "motoko"
+    },
+    "karciane_frontend": {
+      "dependencies": [
+        "karciane_backend"
+      ],
+      "source": [
+        "src/karciane_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "karciane_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
