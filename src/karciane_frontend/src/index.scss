@@ -4,10 +4,12 @@ body {
 }
 
 img {
-  max-width: 50vw;
-  max-height: 25vw;
+  gap: 10em;
+  max-width: 100px;
+  max-height: 50px;
   display: block;
   margin: auto;
+  align-content: random($limit: 1);
 }
 
 form {
@@ -25,6 +27,21 @@ button[type="submit"] {
   margin: 10px auto;
   float: right;
 }
+
+nav{
+  text-align: right;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  }
+
+ a{ text-decoration: none;
+  font-size: 0.8rem;
+  color: #16125c;
+  transition: color 0.3s;
+    &:hover{
+    color: #ef4f4f;
+    }
+ }  
 
 #greeting {
   margin: 10px auto;

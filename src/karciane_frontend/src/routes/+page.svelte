@@ -17,7 +17,7 @@
 </script>
 
 <main>
-  <img src="/logo2.svg" alt="DFINITY logo" />
+  
   <br />
   <br />
   <form action="#" on:submit|preventDefault={onSubmit}>
@@ -27,6 +27,5 @@
   </form>
   <section id="greeting">{greeting}</section>
 
-  <a href="/about">About</a>
 </main>
  
