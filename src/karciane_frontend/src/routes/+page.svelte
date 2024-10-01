@@ -20,9 +20,9 @@
   
   <br />
   <br />
-  <form action="#" on:submit|preventDefault={onSubmit}>
+  <form action="#" on:submit|preventDefault={onSubmit} >
     <label for="name">Wynik WE: &nbsp;</label>
-    <input id="name" alt="Name" type="text" />
+    <input id="name" alt="Name" type="text" required />
     <button type="submit">Click Me!</button>
   </form>
   <section id="greeting">{greeting}</section>
