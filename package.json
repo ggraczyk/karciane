@@ -14,5 +14,8 @@
   "type": "module",
   "workspaces": [
     "src/karciane_frontend"
-  ]
+  ],
+  "dependencies": {
+    "yup": "^1.4.0"
+  }
 }
