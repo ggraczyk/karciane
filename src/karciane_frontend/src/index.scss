@@ -14,12 +14,10 @@ img {
 
 form {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  flex-flow: row wrap;
-  max-width: 60vw;
-  margin: auto;
-  align-items: baseline;
+  gap: 16px;
 }
 
 button[type="submit"] {

@@ -7,9 +7,10 @@
 	let errors = {};
 
     const schema = yup.object().shape({
-      name: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
-                            "tylko liczby podzielne przez 5!"
-    ),
+      pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
+                            "źle!"),
+      pair2: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
+                            "źle!"),
     });
 
    
@@ -21,7 +22,7 @@
     alert(JSON.stringify(values));
 
     const name = event.target.name.value;
-    backend.greet(name).then((response) => {
+    backend.greet(pair1).then((response) => {
       greeting = response;
     });
     return false;
@@ -57,11 +58,13 @@
   <br />
   <br />
   <form action="#" on:submit|preventDefault={submitHandler}>
-    <label for="name">Wynik WE: &nbsp;</label>
-  
-    <input id="name" alt="Name" type="text" bind:value={values.name}/>
-    <span>{#if errors.name}{errors.name}{/if}</span>
-    <button type="submit">Click Me!</button>
+    <label for="pair1">Wynik WE: &nbsp;</label>
+    <input id="pair1" alt="pair1" type="text" bind:value={values.pair1}/>
+    <span>{#if errors.pair1}{errors.pair1}{/if}</span>
+    <label for="pair2">Wynik NS: &nbsp;</label>
+    <input id="pair2" alt="pair2" type="text" bind:value={values.pair2}/>
+    <span>{#if errors.pair2}{errors.pair2}{/if}</span>
+    <button type="submit">Dodaj</button>
   </form>
   
   <section id="greeting">{greeting}</section>
