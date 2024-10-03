@@ -41,9 +41,15 @@
 			await schema.validate(values, { abortEarly: false });
 			//alert(JSON.stringify(values, null, 2));
 			errors = {};
+
+
+
 		} catch (err) {
 			errors = extractErrors(err);
 		}
+    backend.greet(pair1.value,pair2.value).then((response) => {
+      greeting = response;
+    });
 
 
 	}
