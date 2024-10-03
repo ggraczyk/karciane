@@ -1,5 +1,38 @@
+import Int8 "mo:base/Int8";
+import List "mo:base/List";
+import Hash "mo:base/Hash";
+import Array "mo:base/Array";
 actor {
+
+type Hand = {
+    id : Nat;
+    ns : Int8;
+    we : Int8;
+  };
+
+stable var hands = List.nil<Hand>();
+stable var counter: Nat = 0;
+
+
+
+public query func readHands(): async[Hand]{
+    // hands.reverse<Hand> (hands);
+    // return List.toArray(hands);
+    return Array.reverse(List.toArray(hands));
+  };
+
+  public func addHand(ns : Int8, we : Int8) : async[Hand]{
+    counter := counter + 1;
+    let hand : Hand = {id = counter; ns = ns; we = we};
+    hands := List.push(hand, hands);
+     return Array.reverse(List.toArray(hands));
+  };
+
   public query func greet(pair1 : Text, pair2 : Text) : async Text {
+    return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
+  };
+
+    public  func zapisz(pair1 : Text, pair2 : Text) : async Text {
     return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
   };
 };

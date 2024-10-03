@@ -16,6 +16,7 @@
    
   
   let greeting = "";
+  
 
    function onSubmit(event) {
 
@@ -41,21 +42,23 @@
 			await schema.validate(values, { abortEarly: false });
 			//alert(JSON.stringify(values, null, 2));
 			errors = {};
+      //backend.addHand(pair1.value ,pair2.value ).then((response) => { //https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
+      await backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
+        greeting = response;
+      });
 
-
+      // await backend.readHands().then((response) => {
+      //                             greeting2 = response;
+      //                           });
 
 		} catch (err) {
 			errors = extractErrors(err);
 		}
-    backend.greet(pair1.value,pair2.value).then((response) => {
-      greeting = response;
-    });
+
 
 
 	}
 
-
-  // $: console.log({greeting});
 
 </script>
 
@@ -72,8 +75,11 @@
     <span>{#if errors.pair2}{errors.pair2}{/if}</span>
     <button type="submit">Dodaj</button>
   </form>
-  
+  <br />
+  <br /> 
   <section id="greeting">{greeting}</section>
 
+  <br />
+  <br />
 </main>
  
