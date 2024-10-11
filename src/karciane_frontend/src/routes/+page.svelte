@@ -13,10 +13,11 @@
                             "źle!"),
     });
 
-   
+  //dfx canister call karciane_backend readHands 
   
   let greeting = "";
-  
+ 
+  const data = [ { id: 1, name: 'Alice', age: 30 }, { id: 2, name: 'Bob', age: 25 }];
 
    function onSubmit(event) {
 
@@ -36,6 +37,13 @@
 		}, {});
 	}
 
+async function czytajWyniki() {
+  await backend.readHands().then((response) => {
+                                  greeting = response;
+                                });
+}
+
+
   async function submitHandler() {
 		try {
 			// `abortEarly: false` to get all the errors
@@ -43,22 +51,20 @@
 			//alert(JSON.stringify(values, null, 2));
 			errors = {};
       //backend.addHand(pair1.value ,pair2.value ).then((response) => { //https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
-      await backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
+      
+      backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
         greeting = response;
       });
-
-      // await backend.readHands().then((response) => {
-      //                             greeting2 = response;
-      //                           });
-
+  
 		} catch (err) {
 			errors = extractErrors(err);
 		}
 
-
+  
 
 	}
 
+  console.log(JSON.stringify(greeting));
 
 </script>
 
@@ -76,8 +82,15 @@
     <button type="submit">Dodaj</button>
   </form>
   <br />
+
+  <button on:click={czytajWyniki}>
+	    Czytaj 
+  </button>
+
   <br /> 
   <section id="greeting">{greeting}</section>
+
+  <section >{greeting}</section>
 
   <br />
   <br />

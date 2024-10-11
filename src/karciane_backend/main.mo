@@ -1,13 +1,13 @@
-import Int8 "mo:base/Int8";
+import Int "mo:base/Int16";
 import List "mo:base/List";
-import Hash "mo:base/Hash";
+//import Hash "mo:base/Hash";
 import Array "mo:base/Array";
 actor {
 
 type Hand = {
     id : Nat;
-    ns : Int8;
-    we : Int8;
+    ns : Int16;
+    we : Int16;
   };
 
 stable var hands = List.nil<Hand>();
@@ -21,7 +21,7 @@ public query func readHands(): async[Hand]{
     return Array.reverse(List.toArray(hands));
   };
 
-  public func addHand(ns : Int8, we : Int8) : async[Hand]{
+  public func addHand(ns : Int16, we : Int16) : async[Hand]{
     counter := counter + 1;
     let hand : Hand = {id = counter; ns = ns; we = we};
     hands := List.push(hand, hands);
