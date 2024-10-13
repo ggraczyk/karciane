@@ -2,6 +2,8 @@
   import "../index.scss";
   import { backend } from "$lib/canisters";
   import * as yup from 'yup';
+  import { fade, scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
   let values = {};
 	let errors = {};
@@ -16,6 +18,8 @@
   //dfx canister call karciane_backend readHands 
   
   let greeting = "";
+  let wyniki = [] ;
+  
  
   const data = [ { id: 1, name: 'Alice', age: 30 }, { id: 2, name: 'Bob', age: 25 }];
 
@@ -39,7 +43,10 @@
 
 async function czytajWyniki() {
   await backend.readHands().then((response) => {
-                                  greeting = response;
+   //await backend.greet(pair1.value ,pair2.value).then((response) => {
+                                  wyniki = response;
+                                 // wyniki = [...wyniki, response];
+                                  //wyniki = wyniki;
                                 });
 }
 
@@ -64,7 +71,8 @@ async function czytajWyniki() {
 
 	}
 
-  console.log(JSON.stringify(greeting));
+
+//  $:  console.log(JSON.stringify(wyniki, null, 2));
 
 </script>
 
@@ -88,9 +96,33 @@ async function czytajWyniki() {
   </button>
 
   <br /> 
-  <section id="greeting">{greeting}</section>
 
-  <section >{greeting}</section>
+<!-- 
+  {@debug wyniki}   -->
+
+  <!--  nie nie tędy droga
+  
+  {#await wyniki}
+	<p>...waiting</p>
+{:then wyniki}
+	<p>The number is {wyniki}</p>
+{:catch error}
+	<p style="color: red">{error.message}</p>
+{/await} -->
+
+
+<div class= "array">
+	{#each wyniki as element, i (element)}
+		<div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 250 }}" class="element">{element}</div>
+	{/each}
+</div>
+
+	<section id="wyniki">
+    {#if wyniki.length>0}
+		Wyniki: {JSON.stringify(wyniki, null, 2)}
+
+    {/if}
+	</section>
 
   <br />
   <br />
