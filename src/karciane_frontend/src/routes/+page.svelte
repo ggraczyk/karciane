@@ -7,6 +7,10 @@
 
   let values = {};
 	let errors = {};
+  let sumaNS = 0;
+  let sumaWE = 0;
+ 
+  const sleep = ms => new Promise(f => setTimeout(f, ms));
 
     const schema = yup.object().shape({
       pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
@@ -21,18 +25,17 @@
   let wyniki = [] ;
   
  
-  const data = [ { id: 1, name: 'Alice', age: 30 }, { id: 2, name: 'Bob', age: 25 }];
+  //  function onSubmit(event) {
 
-   function onSubmit(event) {
+  //   alert(JSON.stringify(values));
 
-    alert(JSON.stringify(values));
-
-    const name = event.target.name.value;
-    backend.greet(pair1).then((response) => {
-      greeting = response;
-    });
-    return false;
-  }
+  //   const name = event.target.name.value;
+  //   backend.greet(pair1).then((response) => {
+  //     greeting = response;
+  //   });
+   
+  //   return false;
+  // }
 
 
   function extractErrors(err) {
@@ -41,13 +44,19 @@
 		}, {});
 	}
 
+
 async function czytajWyniki() {
+
   await backend.readHands().then((response) => {
-
-                                  wyniki = response;
-
-                                });
-}
+                          wyniki = response;
+                          sumaNS = 0;
+                          sumaWE = 0;
+        for (let i=0;i<wyniki.length; i++) {
+          sumaNS += wyniki[i].ns;
+          sumaWE += wyniki[i].we;
+	      };
+  }
+)};
 
 
   async function submitHandler() {
@@ -61,6 +70,8 @@ async function czytajWyniki() {
       backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
         greeting = response;
       });
+      await sleep(4000);
+      await czytajWyniki();
   
 		} catch (err) {
 			errors = extractErrors(err);
@@ -110,17 +121,29 @@ async function czytajWyniki() {
 {/await} -->
 
 
-<div class= "array">
-	{#each wyniki as element, i (element)}
-		<div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 250 }}" class="element">{element.id}</div>
-	{/each}
-</div>
 
-	<!-- <section id="wyniki">
+
+
+	<section id="wyniki">
     {#if wyniki.length>0}
-		Wyniki: {JSON.stringify(wyniki, null, 2)}
+		<!-- Wyniki: {JSON.stringify(wyniki, null, 2)}  -->
+
+    <!-- {#each wyniki as element, i (element)}
+       {element.ns}
+    {/each} -->
+
+
+    <div class= "array">
+      {#each wyniki as element, i (element)}
+        <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 250 }}" class="element">
+          { + element.ns + "..........." + element.we }
+        </div>
+      {/each}
+    </div>  
+    ------------------------<br />
+    {sumaNS}........{sumaWE}
     {/if}
-	</section> -->
+	</section>
 
   <br />
   <br />
