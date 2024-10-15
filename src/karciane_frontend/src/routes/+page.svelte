@@ -43,10 +43,9 @@
 
 async function czytajWyniki() {
   await backend.readHands().then((response) => {
-   //await backend.greet(pair1.value ,pair2.value).then((response) => {
+
                                   wyniki = response;
-                                 // wyniki = [...wyniki, response];
-                                  //wyniki = wyniki;
+
                                 });
 }
 
@@ -72,7 +71,7 @@ async function czytajWyniki() {
 	}
 
 
-//  $:  console.log(JSON.stringify(wyniki, null, 2));
+  //$:  console.log(JSON.stringify(wyniki.toString(), null, 2));
 
 </script>
 
@@ -97,8 +96,8 @@ async function czytajWyniki() {
 
   <br /> 
 
-<!-- 
-  {@debug wyniki}   -->
+
+  <!-- {@debug wyniki}   -->
 
   <!--  nie nie tędy droga
   
@@ -113,16 +112,15 @@ async function czytajWyniki() {
 
 <div class= "array">
 	{#each wyniki as element, i (element)}
-		<div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 250 }}" class="element">{element}</div>
+		<div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 250 }}" class="element">{element.id}</div>
 	{/each}
 </div>
 
-	<section id="wyniki">
+	<!-- <section id="wyniki">
     {#if wyniki.length>0}
 		Wyniki: {JSON.stringify(wyniki, null, 2)}
-
     {/if}
-	</section>
+	</section> -->
 
   <br />
   <br />

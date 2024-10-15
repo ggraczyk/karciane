@@ -1,17 +1,17 @@
-import Int "mo:base/Int16";
+import Int16 "mo:base/Int16";
 import List "mo:base/List";
 //import Hash "mo:base/Hash";
 import Array "mo:base/Array";
 actor {
 
 type Hand = {
-    id : Nat;
+    id : Int16;
     ns : Int16;
     we : Int16;
   };
 
 stable var hands = List.nil<Hand>();
-stable var counter: Nat = 0;
+stable var counter: Int16 = 0;
 
 
 
