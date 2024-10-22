@@ -99,10 +99,10 @@ async function czytajWyniki() {
   <form action="#" on:submit|preventDefault={submitHandler}>
     <label for="pair1">Wynik WE: </label>
     <input id="pair1" alt="pair1" type="text" bind:value={values.pair1}/>
-    <span>{#if errors.pair1}{errors.pair1}{/if}</span>
+    <span id="error">{#if errors.pair1}{errors.pair1}{/if}</span>
      <label for="pair2">Wynik NS: </label>
     <input id="pair2" alt="pair2" type="text" bind:value={values.pair2}/>
-    <span>{#if errors.pair2}{errors.pair2}{/if}</span>
+    <span id="error">{#if errors.pair2}{errors.pair2}{/if}</span>
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
     {:else}
@@ -170,38 +170,44 @@ async function czytajWyniki() {
     <span id= "pierwszyP">{#if sumaNS>0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
     <span id= "drugiP"   >{#if sumaNS>=1500 && sumaNS<3000}{"" + sumaNS  }{/if}</span>
     <span id= "trzeciP"  >{#if sumaNS>=3000 && sumaNS<5000}{"" + sumaNS  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaNS>=5000}{"" + sumaNS  }{/if}</span>
+    <span id= "czwartyP"  >{#if sumaNS>=5000 && sumaNS<7500}{"" + sumaNS  }{/if}</span>
+    <span id= "piatyP"  >{#if sumaNS>=7500 && sumaNS<10000}{"" + sumaNS  }{/if}</span>
+    <span id= "wygranyP"  >{#if sumaNS>=10000}{"" + sumaNS  }{/if}</span>
     ........
     
     <span id= "minusyP"   >{#if sumaWE<0}{"" + sumaWE  }{/if}</span>
     <span id= "pierwszyP">{#if sumaWE>=0 &&sumaWE<1500}{"" + sumaWE  }{/if}</span>
     <span id= "drugiP"   >{#if sumaWE>=1500 && sumaWE<3000}{"" + sumaWE  }{/if}</span>
     <span id= "trzeciP"  >{#if sumaWE>=3000 && sumaWE<5000}{"" + sumaWE  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaWE>=5000}{"" + sumaWE  }{/if}</span>  
+    <span id= "czwartyP"  >{#if sumaWE>=5000 && sumaWE<7500}{"" + sumaWE  }{/if}</span>
+    <span id= "piatyP"  >{#if sumaWE>=7500 && sumaWE<10000}{"" + sumaWE  }{/if}</span>
+    <span id= "wygranyP"  >{#if sumaWE>=10000}{"" + sumaWE  }{/if}</span>  
   
   </div>
   <br />
 
   <div>
-  <button on:click={czytajWyniki} >
+
+</div>
+<div id="male">
+<span id= "minusyP"  STYLE="font-size:0.9rem" >na 15</span>
+<span id= "pierwszyP" STYLE="font-size:0.9rem">na 50</span>
+<span id= "drugiP"   STYLE="font-size:0.9rem">na 90</span>
+<span id= "trzeciP"  STYLE="font-size:0.9rem">na 120</span>
+<span id= "czwartyP"  STYLE="font-size:0.9rem">na 150</span>
+<span id= "piatyP" STYLE="font-size:0.9rem" >na kanastę</span>
+</div>
+
+  <br />  <button on:click={czytajWyniki} >
     Czytaj 
 </button>
-</div>
-<span id= "minusyP"   font-size=10px >na 15</span>
-<span id= "pierwszyP">na 50</span>
-<span id= "drugiP"   >na 90</span>
-<span id= "trzeciP"  >na 120</span>
-<span id= "czwartyP"  >na 150</span>
-<span id= "piatyP"  >na kanastę</span>
-
-  <br /><br />
 </main>
 
 <style>
 #wyniki {
   margin: 10px auto;
   padding: 10px 60px;
-  border: 1px solid #222;
+  border: 1px dashed #222;
   background-color:antiquewhite;
   justify-content: center;
 }
@@ -212,33 +218,38 @@ async function czytajWyniki() {
   font-family: "Montserrat", sans-serif;
   font-size: 1.5rem;
   background-color:whitesmoke;
-  border: dashed;
+  border: 1px solid #222;
+}
+
+#male {
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.5rem;
 }
 
 #minusy {
   color: #e00b0b;
 }
 #minusyP {
-  background-color: #8871ee;
+  background-color: #c2b6f5;
 }
 #pierwszyP {
-  background-color:rgb(90, 221, 231);
+  background-color:rgb(130, 223, 229);
 }
 
 #drugiP {
-  background-color: #37e334;
+  background-color: #9ced9b;
 }
 
 #trzeciP {
-  background-color: #d0d536;
+  background-color: #d0d371;
 }
 
 #czwartyP {
-  background-color: #e7ab1e;
+  background-color: #e5ca8a;
 }
 
 #piatyP {
-  background-color: #ec8123;
+  background-color: #edb98c;
 }
 
 #wygranyP {
