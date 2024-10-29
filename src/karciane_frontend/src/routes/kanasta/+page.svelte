@@ -35,6 +35,14 @@
     
 	}
 
+  async function reset() {
+    
+    await backend.resetHand().then((response) => {
+        //info = response;
+        czytajWyniki();
+    }
+    
+    )};
 
 async function czytajWyniki() {
 
@@ -135,8 +143,8 @@ async function czytajWyniki() {
   </section>
   
   <div id="suma" transition:blur={{ amount: 100,duration: 2900 }} >&nbsp;&nbsp;  &nbsp;&nbsp;
-    <span id= "minusyP"   >{#if sumaNS<=0}{"" + sumaNS  }{/if}</span>
-    <span id= "pierwszyP">{#if sumaNS>0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
+    <span id= "minusyP"   >{#if sumaNS<0}{"" + sumaNS  }{/if}</span>
+    <span id= "pierwszyP">{#if sumaNS>=0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
     <span id= "drugiP"   >{#if sumaNS>=1500 && sumaNS<3000}{"" + sumaNS  }{/if}</span>
     <span id= "trzeciP"  >{#if sumaNS>=3000 && sumaNS<5000}{"" + sumaNS  }{/if}</span>
     <span id= "czwartyP"  >{#if sumaNS>=5000 && sumaNS<7500}{"" + sumaNS  }{/if}</span>
@@ -168,6 +176,14 @@ async function czytajWyniki() {
 </div>
 
   <br />  <button on:click={czytajWyniki} style="align:center">Czytaj </button>
+  {#if sumaNS>=10000 || sumaWE >=10000}
+  <div><button on:click={reset} >restart gry </button></div>
+{:else}
+  <div><button on:click={reset} hidden>restart gry </button></div>
+{/if}
+    
+
+
 </main>
 
 <style>
