@@ -28,6 +28,11 @@ public query func readHands(): async[Hand]{
      return Array.reverse(List.toArray(hands));
   };
 
+  public func resetHand() : async Text{
+    hands := List.nil<Hand>();
+     return "Nowa gra";
+  };
+
   public query func greet(pair1 : Text, pair2 : Text) : async Text {
     return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
   };
