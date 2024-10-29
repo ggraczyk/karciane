@@ -1,8 +1,4 @@
-body {
-  font-family: sans-serif;
-  font-size: 1.5rem;
-  background-color: aquamarine;
-}
+
 
 img {
   gap: 10em;
@@ -18,44 +14,15 @@ form {
   gap: 12px;
 }
 
-button[type="submit"] {
-  padding: 5px 20px;
-  margin: 10px auto;
-  float: right;
-}
-
-nav {
-  text-align: right;
-  font-family: "Montserrat", sans-serif;
-  font-size: 1.5rem;
-  }
-
-#error {
-  font-family: "Montserrat", sans-serif;
-  color: #fa0303;
-  font-size: 0.5rem;
-}  
-span {
-    font-family: "Montserrat", sans-serif;
-    font-size: 1.5rem;
+  button[type="submit"] {
+    padding: 15px 20px;
+    margin: 10px auto;
+    float: right;
     }
 
- a{ text-decoration: none;
-  font-size: 0.8rem;
-  color: #16125c;
-  transition: color 0.3s;
-    &:hover{
-    color: #ef4f4f;
-    }
- }  
 
-#greeting {
-  margin: 10px auto;
-  padding: 10px 60px;
-  border: 1px solid #222;
-}
 
-#greeting:empty {
-  display: none;
-}
+
+
+
 
