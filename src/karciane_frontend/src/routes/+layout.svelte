@@ -2,7 +2,8 @@
 
 <nav>
 	<a href="/kanasta">Kanasta</a>
-	<a href="/about">About</a>
+  <a href="/brydge">Brydż</a>
+	<a href="/about">Admin</a>
 </nav>
 
 <body></body>
