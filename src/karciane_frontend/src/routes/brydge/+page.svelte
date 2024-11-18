@@ -13,31 +13,41 @@
   let blokujDodaj = false;
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
+  let double = false;
+  let redouble = false;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
 
-    const schema = yup.object().shape({
-      pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
-                            "źle!"),
-      pair2: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
-                            "źle!"),
-    });
+  let side = "";
+  let selectedC = "";
+  let selectedV = 0;
+  let contractName ="";
+  let contractVol ="";
+  let tricks = 0;
+  let miltons = 0;
+  
+    // const schema = yup.object().shape({
+    //   pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
+    //                         "źle!"),
+    //   pair2: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
+    //                         "źle!"),
+    // });
 
   
-  let greeting = "";
-  let wyniki = [] ;
-  
+   let greeting = "";
+   let wyniki = [] ;
+
  
-   function extractErrors(err) {
-		return err.inner.reduce((acc, err) => {
-			return { ...acc, [err.path]: err.message };
-		}, {});
+  //  function extractErrors(err) {
+	// 	return err.inner.reduce((acc, err) => {
+	// 		return { ...acc, [err.path]: err.message };
+	// 	}, {});
     
-	}
+	// }
 
   async function reset() {
     
-    await backend.resetHand().then((response) => {
+    await backend.b_resetHand().then((response) => {
         //info = response;
         czytajWyniki();
     }
@@ -46,13 +56,13 @@
 
 async function czytajWyniki() {
 
-  await backend.readHands().then((response) => {
+  await backend.b_readHands().then((response) => {
                           wyniki = response;
                           sumaNS = 0;
                           sumaWE = 0;
         for (let i=0;i<wyniki.length; i++) {
-          sumaNS += wyniki[i].ns;
-          sumaWE += wyniki[i].we;
+          sumaNS += 0;
+          sumaWE += wyniki[i].tricks;
 	      };
         blokujDodaj=false;
   }
@@ -63,13 +73,9 @@ async function czytajWyniki() {
   async function submitHandler() {
     blokujDodaj=true;
 		try {
-			// `abortEarly: false` to get all the errors
-			await schema.validate(values, { abortEarly: false });
-			//alert(JSON.stringify(values, null, 2));
-			errors = {};
-      //backend.addHand(pair1.value ,pair2.value ).then((response) => { //https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
-      
-      backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
+		//	await schema.validate(values, { abortEarly: false });
+				errors = {};
+       backend.b_addHand(side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.miltons | 0 ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -77,7 +83,7 @@ async function czytajWyniki() {
   
 		} catch (err) {
       blokujDodaj=false;
-			errors = extractErrors(err);
+		//	errors = extractErrors(err);
 		}
 
 	}
@@ -89,15 +95,75 @@ async function czytajWyniki() {
 
 <main>
   
-  <br />
+  Kontrakt: <br/>
 
   <form action="#" on:submit|preventDefault={submitHandler}>
-    <label for="pair1">Wynik {labelNS}: </label>
-    <input id="pair1" size="20.px" alt="pair1" type="text" bind:value={values.pair1} style="height:28px;font-size:11pt;"/>
-    <span id="error">{#if errors.pair1}{errors.pair1}{/if}</span> <br />
-     <label for="pair2">Wynik {labelWE}: </label>
-    <input id="pair2" alt="pair2" type="text" bind:value={values.pair2} style="height:28px;font-size:11pt;"/>
-    <span id="error">{#if errors.pair2}{errors.pair2}{/if}</span>
+    <!-- TODO zamień na listę  -->
+
+<!-- <input id="contractVol" alt="contractVol" type="text" bind:value={values.contractVol} style="height:28px;font-size:12pt;width:28px"/>
+<span id="error">{#if errors.contractVol}{errors.contractVol}{/if}</span> -->
+
+<select
+bind:value={side}
+onchange={() => (side = '')} style="height:28px;font-size:12pt;;width:60px"
+>
+{#each ["NS","WE"] as side}
+  <option value={side}>
+    {side}
+  </option>
+{/each}
+</select>
+
+
+<select
+bind:value={selectedV}
+onchange={() => (contractVol = '')} style="height:28px;font-size:12pt;;width:40px"
+>
+{#each [1,2,3,4,5,6,7] as contractVol}
+  <option value={contractVol}>
+    {contractVol}
+  </option>
+{/each}
+</select>
+
+
+    <select
+		bind:value={selectedC}
+		onchange={() => (contractName = '')} style="height:28px;font-size:12pt;;width:98px"
+	>
+		{#each ["trefl","karo","kier","pik","NT"] as contractName}
+			<option value={contractName}>
+				{contractName}
+			</option>
+		{/each}
+	</select>
+  k<input type="checkbox" bind:checked={double}>
+  r<input type="checkbox" bind:checked={redouble}>
+
+   <!-- <input id="contractName" size="20.px" alt="contractName" type="text" bind:value={values.contractName} style="height:28px;font-size:11pt;"/>
+   -->
+
+
+   <span id="error">{#if errors.contractVol}{errors.contractVol}{/if}</span> <br />
+
+Lew: 
+   <select
+   bind:value={tricks}
+   onchange={() => (tricks = '')} style="height:28px;font-size:12pt;;width:98px"
+   >
+   {#each [0,1,2,3,4,5,6,7,8,9,10,11,12] as tricks}
+     <option value={tricks}>
+       {tricks}
+     </option>
+   {/each}
+   </select>
+<!-- 
+    <input id="tricks" alt="tricks" type="text" bind:value={values.tricks} style="height:28px;font-size:12pt;width=8px"/> -->
+    <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
+ <br/>
+ Punktów:
+ <input id="miltons" alt="miltons" type="text" bind:value={values.miltons} style="height:28px;font-size:12pt;;width:98px"/> 
+
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
     {:else}

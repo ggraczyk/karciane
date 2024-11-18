@@ -11,6 +11,7 @@ actor {
 //brydżowe
 type Game = {
   id : Int16;
+  side : Text;
   contractName : Text; // club,diamond,heart,spade
   contractVol : Int8; //1-7 
   tricks : Int8;
@@ -18,7 +19,7 @@ type Game = {
   undertrics : Int8;
   doubled : Bool;
   redoubled : Bool;
-
+  miltons : Int8;
 };
 
 stable var b_hands = List.nil<Game>();
@@ -30,16 +31,19 @@ public query func b_readHands(): async[Game]{
     return Array.reverse(List.toArray(b_hands));
   };
 
-  public func b_addHand(conName : Text, conVol : Int8, t : Int8,  d : ?Bool, rd : ?Bool) : async[Game]{
+  public func b_addHand(s : Text, n : Text, v : Int8, t : Int8,  d : Bool, rd : Bool, m : Int8) : async[Game]{
+  // public func b_addHand(conName : Text, conVol : Int8, t : Int8,  d : ?Bool, rd : ?Bool) : async[Game]{
     b_counter := b_counter + 1;
     let b_hand : Game = {id = b_counter; 
-                         contractName = conName; 
-                         contractVol = conVol; 
+                         side = s;
+                         contractName = n; 
+                         contractVol = v; 
                          tricks = t; 
-                         overtricks = if (t - ( 6 + conVol ) > 0)  {t - ( 6 + conVol )} else 0 ;  
-                         undertrics = if ( ( 6 + conVol ) - t > 0)  {( 6 + conVol ) - t} else 0;
-                         doubled = Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
-                         redoubled = Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
+                         overtricks = if (t - ( 6 + v ) > 0)  {t - ( 6 + v )} else 0 ;  
+                         undertrics = if ( ( 6 + v ) - t > 0)  {( 6 + v ) - t} else 0;
+                         doubled = d; //Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
+                         redoubled = rd; //Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
+                         miltons = m;
                          };
     b_hands := List.push(b_hand, b_hands);
      return Array.reverse(List.toArray(b_hands));
