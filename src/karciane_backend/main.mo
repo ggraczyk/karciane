@@ -15,11 +15,11 @@ type Game = {
   contractName : Text; // club,diamond,heart,spade
   contractVol : Int8; //1-7 
   tricks : Int8;
-  overtricks : Int8;
-  undertrics : Int8;
+ // overtricks : Int8;
+ // undertrics : Int8;
   doubled : Bool;
   redoubled : Bool;
-  miltons : Int8;
+  pc : Int8;
 };
 
 stable var b_hands = List.nil<Game>();
@@ -39,11 +39,11 @@ public query func b_readHands(): async[Game]{
                          contractName = n; 
                          contractVol = v; 
                          tricks = t; 
-                         overtricks = if (t - ( 6 + v ) > 0)  {t - ( 6 + v )} else 0 ;  
-                         undertrics = if ( ( 6 + v ) - t > 0)  {( 6 + v ) - t} else 0;
+                      //   overtricks = if (t - ( 6 + v ) > 0)  {t - ( 6 + v )} else 0 ;  
+                      //   undertrics = if ( ( 6 + v ) - t > 0)  {( 6 + v ) - t} else 0;
                          doubled = d; //Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
                          redoubled = rd; //Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
-                         miltons = m;
+                         pc = m;
                          };
     b_hands := List.push(b_hand, b_hands);
      return Array.reverse(List.toArray(b_hands));

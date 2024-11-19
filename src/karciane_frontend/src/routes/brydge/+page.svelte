@@ -24,6 +24,7 @@
   let contractName ="";
   let contractVol ="";
   let tricks = 0;
+  let pc = 0;
   let miltons = 0;
   
     // const schema = yup.object().shape({
@@ -45,6 +46,8 @@
     
 	// }
 
+
+
   async function reset() {
     
     await backend.b_resetHand().then((response) => {
@@ -53,6 +56,39 @@
     }
     
     )};
+
+function count_milton(side, v, con ,t, double, redouble, PC  ){ 
+  let score = 0;
+  let extraNT = 0;
+  let bonus = 0;
+  let penalty = 0;
+  let sumScore = 0;
+  let overtricks = t - ( 6 + v ) ;  
+  let undertrics = ( 6 + v ) - t ;
+ 
+ 
+  //ugrana
+  if (overtricks >=0 ){ 
+        if (["♣","♦"].includes(con) ) //"♣","♦","♥","♠","NT"
+         {score = 20}
+        else if (["♥","♠"].includes(con) ) 
+         {score = 30} 
+        else {  //NT
+            score = 30;
+            if (v>=3) {extraNT=10};
+          } 
+
+         
+  }
+  //wpadki
+  else { penalty=50*undertrics};
+
+// nadróbki
+ if (overtricks>0) {bonus=(score+extraNT) * overtricks}
+
+ sumScore = (score * (v) ) + extraNT + bonus - penalty;
+
+   return sumScore};
 
 async function czytajWyniki() {
 
@@ -75,7 +111,7 @@ async function czytajWyniki() {
 		try {
 		//	await schema.validate(values, { abortEarly: false });
 				errors = {};
-       backend.b_addHand(side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.miltons | 0 ).then((response) => {
+       backend.b_addHand(side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0 ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -105,7 +141,7 @@ async function czytajWyniki() {
 
 <select
 bind:value={side}
-onchange={() => (side = '')} style="height:28px;font-size:12pt;;width:60px"
+onchange={() => (side = '')} style="height:30px;font-size:12pt;;width:60px"
 >
 {#each ["NS","WE"] as side}
   <option value={side}>
@@ -117,7 +153,7 @@ onchange={() => (side = '')} style="height:28px;font-size:12pt;;width:60px"
 
 <select
 bind:value={selectedV}
-onchange={() => (contractVol = '')} style="height:28px;font-size:12pt;;width:40px"
+onchange={() => (contractVol = '')} style="height:30px;font-size:12pt;;width:40px"
 >
 {#each [1,2,3,4,5,6,7] as contractVol}
   <option value={contractVol}>
@@ -129,9 +165,9 @@ onchange={() => (contractVol = '')} style="height:28px;font-size:12pt;;width:40p
 
     <select
 		bind:value={selectedC}
-		onchange={() => (contractName = '')} style="height:28px;font-size:12pt;;width:98px"
+		onchange={() => (contractName = '')} style="height:30px;font-size:14pt;width:98px"
 	>
-		{#each ["trefl","karo","kier","pik","NT"] as contractName}
+		{#each ["♣","♦","♥","♠","NT"] as contractName}
 			<option value={contractName}>
 				{contractName}
 			</option>
@@ -151,7 +187,7 @@ Lew:
    bind:value={tricks}
    onchange={() => (tricks = '')} style="height:28px;font-size:12pt;;width:98px"
    >
-   {#each [0,1,2,3,4,5,6,7,8,9,10,11,12] as tricks}
+   {#each [0,1,2,3,4,5,6,7,8,9,10,11,12,13] as tricks}
      <option value={tricks}>
        {tricks}
      </option>
@@ -162,7 +198,7 @@ Lew:
     <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
  <br/>
  Punktów:
- <input id="miltons" alt="miltons" type="text" bind:value={values.miltons} style="height:28px;font-size:12pt;;width:98px"/> 
+ <input id="pc" alt="pc" type="text" bind:value={values.pc} style="height:28px;font-size:12pt;;width:98px"/> 
 
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
@@ -177,8 +213,6 @@ Lew:
   <br /> 
 
 
-<span >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelNS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelWE}</span>
-
 
 	<section id="wyniki">
     {#if wyniki.length>0}
@@ -188,14 +222,16 @@ Lew:
       {#each wyniki as element, i (element)}
 
         <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
-          {#if wyniki.length - i < 5}
-           <span id= "minusy">{#if element.ns<0}{"" + element.ns  }{/if}</span>
-           <span          >{#if element.ns>=0}{"" + element.ns  }{/if}</span>
-            { "............"  }
-            <span id= "minusy">{#if element.we<0}{"" + element.we  }{/if}</span>
-            <span          >{#if element.we>=0}{"" + element.we  }{/if}</span>
-          {/if}
+           <span >{element.contractVol}{element.contractName}&nbsp;&nbsp;</span>
+            <span> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
+             {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
+             {:else}--- 
+                   {/if} </span>
+            <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
+            <span>   {count_milton(element.side, element.contractVol,element.contractName,element.tricks,false,false,element.pc)} </span>
+
         </div>
+
       {/each}
 <br />
 
@@ -204,10 +240,12 @@ Lew:
 
     {/if}
 
-
-
   </section>
-  
+
+
+  <span >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelNS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelWE}</span>
+
+
   <div id="suma" transition:blur={{ amount: 100,duration: 2900 }} >&nbsp;&nbsp;  &nbsp;&nbsp;
     <span id= "minusyP"   >{#if sumaNS<0}{"" + sumaNS  }{/if}</span>
     <span id= "pierwszyP">{#if sumaNS>=0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
@@ -229,18 +267,6 @@ Lew:
   </div>
   <br />
 
-  <div>
-
-</div>
-<div id="male">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<span id= "minusyP"  STYLE="font-size:0.9rem" >na 15</span>
-<span id= "pierwszyP" STYLE="font-size:0.9rem">na 50</span>
-<span id= "drugiP"   STYLE="font-size:0.9rem">na 90</span>
-<span id= "trzeciP"  STYLE="font-size:0.9rem">na 120</span>
-<span id= "czwartyP"  STYLE="font-size:0.9rem">na 150</span>
-<span id= "piatyP" STYLE="font-size:0.9rem" >na kanastę</span>
-</div>
-
   <br />  <button on:click={czytajWyniki} style="align:center">Czytaj </button>
   {#if sumaNS>=10000 || sumaWE >=10000}
   <div><button on:click={reset} >restart gry </button></div>
@@ -254,8 +280,8 @@ Lew:
 
 <style>
 #wyniki {
-  margin: 10px auto;
-  padding: 10px 60px;
+  margin: 5px auto;
+  padding: 10px 10px;
   border: 1px dashed #222;
   background-color:antiquewhite;
   justify-content: center;
@@ -264,41 +290,11 @@ Lew:
 
 #suma {
   color: #e00b0b;
-  font-size: 2.0rem;
+  font-size: 1.8rem;
   background-color:rgb(98, 215, 176);
   /* border: 1px solid #222; */
 }
 
-#male {
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.5rem;
-}
-
-#minusy {
-  color: #e00b0b;
-}
-#minusyP {
-  background-color: #c2b6f5;
-}
-#pierwszyP {
-  background-color:rgb(98, 215, 176);
-}
-
-#drugiP {
-  background-color: #9ced9b;
-}
-
-#trzeciP {
-  background-color: #c8cf7b;
-}
-
-#czwartyP {
-  background-color: #e5ca8a;
-}
-
-#piatyP {
-  background-color: #f39b8e;
-}
 
 #wygranyP {
   animation: blink 1s linear infinite;
