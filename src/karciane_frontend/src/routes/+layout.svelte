@@ -2,7 +2,7 @@
 
 <nav>
 	<a href="/kanasta">Kanasta</a>
-  <a href="/brydge">Brydż</a>
+  <a href="/bridge">Brydż</a>
 	<a href="/about">Admin</a>
 </nav>
 
@@ -31,16 +31,6 @@ body {
   font-family: "Montserrat", sans-serif;
   font-size: 1.5rem;
   }
-
-#error {
-  font-family: "Montserrat", sans-serif;
-  color: #fa0303;
-  font-size: 1.0rem;
-}  
-span {
-    font-family: "Montserrat", sans-serif;
-    font-size: 1.5rem;
-    }
 
 
 </style>  

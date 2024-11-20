@@ -51,6 +51,7 @@ public query func b_readHands(): async[Game]{
 
   public func b_resetHand() : async Text{
     b_hands := List.nil<Game>();
+    b_counter:=0;
      return "Nowa gra";
   };
 

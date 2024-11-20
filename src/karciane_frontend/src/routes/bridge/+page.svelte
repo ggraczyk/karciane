@@ -97,8 +97,8 @@ async function czytajWyniki() {
                           sumaNS = 0;
                           sumaWE = 0;
         for (let i=0;i<wyniki.length; i++) {
-          sumaNS += 0;
-          sumaWE += wyniki[i].tricks;
+          if (wyniki[i].side == "NS") {sumaNS += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc  )};
+          if (wyniki[i].side == "WE") {sumaWE += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc  )};
 	      };
         blokujDodaj=false;
   }
@@ -197,7 +197,7 @@ Lew:
     <input id="tricks" alt="tricks" type="text" bind:value={values.tricks} style="height:28px;font-size:12pt;width=8px"/> -->
     <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
  <br/>
- Punktów:
+ PC:
  <input id="pc" alt="pc" type="text" bind:value={values.pc} style="height:28px;font-size:12pt;;width:98px"/> 
 
     {#if blokujDodaj}
@@ -222,13 +222,13 @@ Lew:
       {#each wyniki as element, i (element)}
 
         <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
-           <span >{element.contractVol}{element.contractName}&nbsp;&nbsp;</span>
+           <span >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;&nbsp;</span>
             <span> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
              {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
              {:else}--- 
                    {/if} </span>
             <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
-            <span>   {count_milton(element.side, element.contractVol,element.contractName,element.tricks,false,false,element.pc)} </span>
+            <span>   {count_milton(element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc)} </span>
 
         </div>
 
@@ -247,22 +247,12 @@ Lew:
 
 
   <div id="suma" transition:blur={{ amount: 100,duration: 2900 }} >&nbsp;&nbsp;  &nbsp;&nbsp;
-    <span id= "minusyP"   >{#if sumaNS<0}{"" + sumaNS  }{/if}</span>
-    <span id= "pierwszyP">{#if sumaNS>=0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
-    <span id= "drugiP"   >{#if sumaNS>=1500 && sumaNS<3000}{"" + sumaNS  }{/if}</span>
-    <span id= "trzeciP"  >{#if sumaNS>=3000 && sumaNS<5000}{"" + sumaNS  }{/if}</span>
-    <span id= "czwartyP"  >{#if sumaNS>=5000 && sumaNS<7500}{"" + sumaNS  }{/if}</span>
-    <span id= "piatyP"  >{#if sumaNS>=7500 && sumaNS<10000}{"" + sumaNS  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaNS>=10000}{"" + sumaNS  }{/if}</span>
+    <span id= "minusyP"   >{sumaNS}</span>
+
     ........
     
-    <span id= "minusyP"   >{#if sumaWE<0}{"" + sumaWE  }{/if}</span>
-    <span id= "pierwszyP">{#if sumaWE>=0 &&sumaWE<1500}{"" + sumaWE  }{/if}</span>
-    <span id= "drugiP"   >{#if sumaWE>=1500 && sumaWE<3000}{"" + sumaWE  }{/if}</span>
-    <span id= "trzeciP"  >{#if sumaWE>=3000 && sumaWE<5000}{"" + sumaWE  }{/if}</span>
-    <span id= "czwartyP"  >{#if sumaWE>=5000 && sumaWE<7500}{"" + sumaWE  }{/if}</span>
-    <span id= "piatyP"  >{#if sumaWE>=7500 && sumaWE<10000}{"" + sumaWE  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaWE>=10000}{"" + sumaWE  }{/if}</span>  
+
+    <span id= "PierwszyP"  >{sumaWE}</span>  
   
   </div>
   <br />

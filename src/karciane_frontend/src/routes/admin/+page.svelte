@@ -15,7 +15,16 @@ import { labels } from '$lib/shared.svelte.js';
     }
     
     )};
+ 
+    async function b_reset() {
     
+    await backend.resetHand().then((response) => {
+        info = response;
+    }
+    
+    )};
+
+
     async function changeLabel() {
         labels.labelNS = pair1.value
         labels.labelWE = pair2.value
@@ -41,10 +50,12 @@ import { labels } from '$lib/shared.svelte.js';
 
     
 <section>
-    <button on:click={reset}>restart gry </button>
+    <button on:click={reset}>restart kanasta </button>
 </section>
 
-
+<section>
+    <button on:click={b_reset}>restart brydź </button>
+</section> 
 {info}
 
 
