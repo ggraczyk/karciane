@@ -5,6 +5,7 @@
   import { fade, blur, fly, slide, scale, draw , crossfade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
+    import { idlFactory } from "@dfinity/agent/lib/cjs/canisters/management_service";
 
   let values = {};
 	let errors = {};
@@ -37,6 +38,17 @@
   
    let greeting = "";
    let wyniki = [] ;
+   let idh = 0;
+   const hands =([{id: 1, dealer: 'N', vul:'---', para:'NS'},
+                  {id: 2, dealer: 'E', vul:'NS', para:'WE'},
+                  {id: 3, dealer: 'S', vul:'WE', para:'NS'},
+                  {id: 4, dealer: 'W', vul:'obie', para:'WE'},
+                  {id: 5, dealer: 'N', vul:'NS', para:'NS'},
+                  {id: 6, dealer: 'E', vul:'WE', para:'WE'},
+                  {id: 7, dealer: 'S', vul:'obie', para:'NS'},
+                  {id: 8, dealer: 'W', vul:'---', para:'WE'},
+
+   ] )
 
  
   //  function extractErrors(err) {
@@ -57,7 +69,7 @@
     
     )};
 
-function count_milton(side, v, con ,t, double, redouble, PC  ){ 
+function count_milton(id, side, v, con , t, double, redouble, PC  ){ 
   let score = 0;
   let extraNT = 0;
   let bonus = 0;
@@ -65,6 +77,7 @@ function count_milton(side, v, con ,t, double, redouble, PC  ){
   let sumScore = 0;
   let overtricks = t - ( 6 + v ) ;  
   let undertrics = ( 6 + v ) - t ;
+   
  
  
   //ugrana
@@ -87,8 +100,10 @@ function count_milton(side, v, con ,t, double, redouble, PC  ){
  if (overtricks>0) {bonus=(score+extraNT) * overtricks}
 
  sumScore = (score * (v) ) + extraNT + bonus - penalty;
-
+  idh=id |0 ;
    return sumScore};
+
+
 
 async function czytajWyniki() {
 
@@ -131,7 +146,9 @@ async function czytajWyniki() {
 
 <main>
   
+  Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh+1].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh+1].vul}</span> <br/>
   Kontrakt: <br/>
+
 
   <form action="#" on:submit|preventDefault={submitHandler}>
     <!-- TODO zamień na listę  -->
@@ -198,7 +215,7 @@ Lew:
     <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
  <br/>
  PC:
- <input id="pc" alt="pc" type="text" bind:value={values.pc} style="height:28px;font-size:12pt;;width:98px"/> 
+ <input id="pc" alt="pc" type="text" bind:value={values.pc} style="height:28px;font-size:12pt;width:98px"/> 
 
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
@@ -222,16 +239,17 @@ Lew:
       {#each wyniki as element, i (element)}
 
         <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
-           <span >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;&nbsp;</span>
+          <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span>
+           <span >&nbsp;{element.contractVol}{element.contractName}&nbsp;&nbsp;{element.side}</span>
             <span> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
-             {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
-             {:else}--- 
+                   {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
+                   {:else}--- 
                    {/if} </span>
             <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
-            <span>   {count_milton(element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc)} </span>
+            <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc)} </span>
 
         </div>
-
+        
       {/each}
 <br />
 
@@ -269,6 +287,11 @@ Lew:
 </main>
 
 <style>
+#zalozenia{
+  background-color:rgb(232, 145, 31);
+  font-size:8pt;
+  justify-content: center;
+}  
 #wyniki {
   margin: 5px auto;
   padding: 10px 10px;
