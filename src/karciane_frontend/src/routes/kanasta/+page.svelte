@@ -6,6 +6,10 @@
 	import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
 
+  let minusNS = false;
+  let minusWE = false;
+  let minNS=1;
+  let minWE=1;
   let values = {};
 	let errors = {};
   let sumaNS = 0;
@@ -67,9 +71,13 @@ async function czytajWyniki() {
 			await schema.validate(values, { abortEarly: false });
 			//alert(JSON.stringify(values, null, 2));
 			errors = {};
-      //backend.addHand(pair1.value ,pair2.value ).then((response) => { //https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
+      minNS=1;
+      minWE=1; 
+            //backend.addHand(pair1.value ,pair2.value ).then((response) => { //https://www.geeksforgeeks.org/convert-a-string-to-an-integer-in-javascript/
       
-      backend.addHand(pair1.value | 0, pair2.value | 0).then((response) => {
+      if (minusNS) {minNS=-1}
+      if (minusWE) {minWE=-1}      
+      backend.addHand(minNS * pair1.value , minWE * pair2.value ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -95,10 +103,12 @@ async function czytajWyniki() {
 
   <form action="#" on:submit|preventDefault={submitHandler}>
     <label for="pair1">Wynik {labelNS}: </label>
-    <input inputType="phone" id="pair1" size="20.px" alt="pair1" type="text" bind:value={values.pair1} style="height:28px;font-size:11pt;"/>
+    <input type="checkbox" bind:checked={minusNS}  /> minus
+    <input id="pair1"  alt="pair1" type="number" bind:value={values.pair1} style="height:28px;font-size:11pt;width:60px"/>
     <span id="error">{#if errors.pair1}{errors.pair1}{/if}</span> <br />
      <label for="pair2">Wynik {labelWE}: </label>
-    <input inputType="phone" id="pair2" alt="pair2" type="text" bind:value={values.pair2} style="height:28px;font-size:11pt;"/>
+     <input type="checkbox" bind:checked={minusWE} /> minus
+    <input  id="pair2" alt="pair2" type="number" bind:value={values.pair2} style="height:28px;font-size:11pt;width:60px"/>
     <span id="error">{#if errors.pair2}{errors.pair2}{/if}</span>
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>

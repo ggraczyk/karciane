@@ -223,7 +223,7 @@ Lew:
     <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
  <br/>
  PC:
- <input id="pc" alt="pc" type="text" bind:value={values.pc} style="height:28px;font-size:12pt;width:98px"/> 
+ <input id="pc" alt="pc" type="number" bind:value={values.pc} style="height:28px;font-size:12pt;width:98px"/> 
 
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>

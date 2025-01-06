@@ -54,7 +54,7 @@ import { labels } from '$lib/shared.svelte.js';
 </section>
 
 <section>
-    <button on:click={b_reset}>restart brydź </button>
+    <button on:click={b_reset}>restart brydż </button>
 </section> 
 {info}
 
