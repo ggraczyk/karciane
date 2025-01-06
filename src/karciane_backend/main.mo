@@ -5,11 +5,24 @@ import Array "mo:base/Array";
 import Text "mo:base/Text";
 import Int8 "mo:base/Int8";
 import Bool "mo:base/Bool";
-import Option "mo:base/Option";
+//import Option "mo:base/Option";
 
 actor {
+//tylko PIN
+
+stable var gamePin: Text = "";
+
+  public func addPin(pin : Text) : async Text{
+    gamePin := pin;
+    return "W ramach aktualnej sesji posługuj się pinem " # gamePin;
+  };
+
+
+
+
 //brydżowe
 type Game = {
+  pin : Text;
   id : Int16;
   side : Text;
   contractName : Text; // club,diamond,heart,spade
@@ -34,7 +47,8 @@ public query func b_readHands(): async[Game]{
   public func b_addHand(s : Text, n : Text, v : Int8, t : Int8,  d : Bool, rd : Bool, m : Int8) : async[Game]{
   // public func b_addHand(conName : Text, conVol : Int8, t : Int8,  d : ?Bool, rd : ?Bool) : async[Game]{
     b_counter := b_counter + 1;
-    let b_hand : Game = {id = b_counter; 
+    let b_hand : Game = {pin = gamePin; 
+                         id = b_counter; 
                          side = s;
                          contractName = n; 
                          contractVol = v; 
@@ -66,6 +80,7 @@ public query func b_readHands(): async[Game]{
 //kanaściane
 ///////////////////////////////////////////////////////////////////////////////////////
 type Hand = {
+    pin : Text;
     id : Int16;
     ns : Int16;
     we : Int16;
@@ -84,7 +99,7 @@ public query func readHands(): async[Hand]{
 
   public func addHand(ns : Int16, we : Int16) : async[Hand]{
     counter := counter + 1;
-    let hand : Hand = {id = counter; ns = ns; we = we};
+    let hand : Hand = {pin=gamePin; id = counter; ns = ns; we = we};
     hands := List.push(hand, hands);
      return Array.reverse(List.toArray(hands));
   };
@@ -97,6 +112,11 @@ public query func readHands(): async[Hand]{
   public query func greet(pair1 : Text, pair2 : Text) : async Text {
     return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
   };
+
+  public query func getPins() : async Text {
+    return "piny gier - " # gamePin # "!";
+  };
+
 
     public  func zapisz(pair1 : Text, pair2 : Text) : async Text {
     return "ostatni wynik - " # pair1 # ":" # pair2 # "!";

@@ -28,6 +28,7 @@
   let pc = 0;
   let miltons = 0;
   
+  
     // const schema = yup.object().shape({
     //   pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
     //                         "źle!"),

@@ -74,6 +74,8 @@ async function czytajWyniki() {
       });
       await sleep(4000);
       await czytajWyniki();
+      pair1.value = null;
+      pair2.value =null;
   
 		} catch (err) {
       blokujDodaj=false;
@@ -125,7 +127,7 @@ async function czytajWyniki() {
           {#if wyniki.length - i < 5}
            <span id= "minusy">{#if element.ns<0}{"" + element.ns  }{/if}</span>
            <span          >{#if element.ns>=0}{"" + element.ns  }{/if}</span>
-            { "............"  }
+            { ".........."  }
             <span id= "minusy">{#if element.we<0}{"" + element.we  }{/if}</span>
             <span          >{#if element.we>=0}{"" + element.we  }{/if}</span>
           {/if}
@@ -142,23 +144,23 @@ async function czytajWyniki() {
 
   </section>
   
-  <div id="suma" transition:blur={{ amount: 100,duration: 2900 }} >&nbsp;&nbsp;  &nbsp;&nbsp;
-    <span id= "minusyP"   >{#if sumaNS<0}{"" + sumaNS  }{/if}</span>
-    <span id= "pierwszyP">{#if sumaNS>=0 &&sumaNS<1500}{"" + sumaNS  }{/if}</span>
-    <span id= "drugiP"   >{#if sumaNS>=1500 && sumaNS<3000}{"" + sumaNS  }{/if}</span>
-    <span id= "trzeciP"  >{#if sumaNS>=3000 && sumaNS<5000}{"" + sumaNS  }{/if}</span>
-    <span id= "czwartyP"  >{#if sumaNS>=5000 && sumaNS<7500}{"" + sumaNS  }{/if}</span>
-    <span id= "piatyP"  >{#if sumaNS>=7500 && sumaNS<10000}{"" + sumaNS  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaNS>=10000}{"" + sumaNS  }{/if}</span>
-    ........
+  <div id="suma" transition:blur={{ amount: 100,duration: 2900 }} >&nbsp;&nbsp; 
+    <span >{#if sumaNS<0}{"" + sumaNS  }   <span STYLE="font-size:0.8rem" > 15</span>  {/if} </span>
+    <span >{#if sumaNS>=0 &&sumaNS<1500}{"" + sumaNS  } <span id= "pierwszyP" STYLE="font-size:0.8rem"> 50</span> {/if}</span>
+    <span >{#if sumaNS>=1500 && sumaNS<3000}{"" + sumaNS  }<span  STYLE="font-size:0.8rem"> 90</span>{/if}</span>
+    <span >{#if sumaNS>=3000 && sumaNS<5000}{"" + sumaNS  }<span  STYLE="font-size:0.8rem"> 120</span>{/if}</span>
+    <span >{#if sumaNS>=5000 && sumaNS<7500}{"" + sumaNS }<span  STYLE="font-size:0.8rem"> 150</span>{/if}</span>
+    <span >{#if sumaNS>=7500 && sumaNS<10000}{"" + sumaNS  }<span  STYLE="font-size:0.8rem"> kanastę</span>{/if}</span>
+    <span >{#if sumaNS>=10000}{"" + sumaNS  }{/if}</span>
+    ....
     
-    <span id= "minusyP"   >{#if sumaWE<0}{"" + sumaWE  }{/if}</span>
-    <span id= "pierwszyP">{#if sumaWE>=0 &&sumaWE<1500}{"" + sumaWE  }{/if}</span>
-    <span id= "drugiP"   >{#if sumaWE>=1500 && sumaWE<3000}{"" + sumaWE  }{/if}</span>
-    <span id= "trzeciP"  >{#if sumaWE>=3000 && sumaWE<5000}{"" + sumaWE  }{/if}</span>
-    <span id= "czwartyP"  >{#if sumaWE>=5000 && sumaWE<7500}{"" + sumaWE  }{/if}</span>
-    <span id= "piatyP"  >{#if sumaWE>=7500 && sumaWE<10000}{"" + sumaWE  }{/if}</span>
-    <span id= "wygranyP"  >{#if sumaWE>=10000}{"" + sumaWE  }{/if}</span>  
+    <span >{#if sumaWE<0}{"" + sumaWE  } <span  STYLE="font-size:0.8rem" > 15</span> {/if} </span>
+    <span >{#if sumaWE>=0 &&sumaWE<1500}{"" + sumaWE  }<span id= "pierwszyP" STYLE="font-size:0.8rem"> 50</span> {/if}</span>
+    <span >{#if sumaWE>=1500 && sumaWE<3000}{"" + sumaWE  }<span  STYLE="font-size:0.8rem"> 90</span>{/if}</span>
+    <span >{#if sumaWE>=3000 && sumaWE<5000}{"" + sumaWE  }<span  STYLE="font-size:0.8rem"> 120</span>{/if}</span>
+    <span >{#if sumaWE>=5000 && sumaWE<7500}{"" + sumaWE  }<span  STYLE="font-size:0.8rem"> 150</span>{/if}</span>
+    <span >{#if sumaWE>=7500 && sumaWE<10000}{"" + sumaWE  }<span  STYLE="font-size:0.8rem"> kanastę</span>{/if}</span>
+    <span >{#if sumaWE>=10000}{"" + sumaWE  }{/if}</span>  
   
   </div>
   <br />
@@ -166,14 +168,7 @@ async function czytajWyniki() {
   <div>
 
 </div>
-<div id="male">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<span id= "minusyP"  STYLE="font-size:0.9rem" >na 15</span>
-<span id= "pierwszyP" STYLE="font-size:0.9rem">na 50</span>
-<span id= "drugiP"   STYLE="font-size:0.9rem">na 90</span>
-<span id= "trzeciP"  STYLE="font-size:0.9rem">na 120</span>
-<span id= "czwartyP"  STYLE="font-size:0.9rem">na 150</span>
-<span id= "piatyP" STYLE="font-size:0.9rem" >na kanastę</span>
-</div>
+
 
   <br />  <button on:click={czytajWyniki} style="align:center">Czytaj </button>
   {#if sumaNS>=10000 || sumaWE >=10000}
