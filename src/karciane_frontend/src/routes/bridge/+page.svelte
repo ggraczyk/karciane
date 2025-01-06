@@ -132,6 +132,13 @@ async function czytajWyniki() {
       });
       await sleep(4000);
       await czytajWyniki();
+      side=null;
+      selectedC=null;
+      selectedV=null;
+      tricks=null;
+      double=null;
+      redouble=null;
+      values.pc=null;
   
 		} catch (err) {
       blokujDodaj=false;

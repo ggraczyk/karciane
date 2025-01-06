@@ -95,10 +95,10 @@ async function czytajWyniki() {
 
   <form action="#" on:submit|preventDefault={submitHandler}>
     <label for="pair1">Wynik {labelNS}: </label>
-    <input id="pair1" size="20.px" alt="pair1" type="text" bind:value={values.pair1} style="height:28px;font-size:11pt;"/>
+    <input inputType="phone" id="pair1" size="20.px" alt="pair1" type="text" bind:value={values.pair1} style="height:28px;font-size:11pt;"/>
     <span id="error">{#if errors.pair1}{errors.pair1}{/if}</span> <br />
      <label for="pair2">Wynik {labelWE}: </label>
-    <input id="pair2" alt="pair2" type="text" bind:value={values.pair2} style="height:28px;font-size:11pt;"/>
+    <input inputType="phone" id="pair2" alt="pair2" type="text" bind:value={values.pair2} style="height:28px;font-size:11pt;"/>
     <span id="error">{#if errors.pair2}{errors.pair2}{/if}</span>
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
