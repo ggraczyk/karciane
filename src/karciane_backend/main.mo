@@ -2,7 +2,7 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 
-actor Karciane {
+actor Karciane_backend {
   type Game = {
     #Bridge : BridgeGameData;
     #Canasta : CanastaGameData;
