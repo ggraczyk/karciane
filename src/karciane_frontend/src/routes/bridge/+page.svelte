@@ -1,6 +1,6 @@
 <script>
   import { Actor, HttpAgent } from '@dfinity/agent';
-  import { idlFactory } from '$lib/declarations/karciane';
+  import { idlFactory } from '/declarations/karciane_backend'; // Poprawiona ścieżka
   import { onMount } from 'svelte';
 
   export let data;
@@ -32,7 +32,7 @@
       suit = gameData.suit;
       beforeParty = gameData.beforeParty;
       afterParty = gameData.afterParty;
-      calculateScore(); // Oblicz wynik po pobraniu danych
+      calculateScore();
     }
   }
 

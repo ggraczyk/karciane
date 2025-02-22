@@ -1,9 +1,9 @@
 <script>
   import { Actor, HttpAgent } from '@dfinity/agent';
-  import { idlFactory } from '$lib/declarations/karciane';
+  import { idlFactory } from '/declarations/karciane_backend'; // Poprawiona ścieżka
   import { onMount } from 'svelte';
 
-  export let data../kanasta/$types.js;
+  export let data;
   let pin = data.pin;
   let actor;
   let message = '';
@@ -97,6 +97,6 @@
   h1 { font-size: 2em; text-align: center; }
   form { max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
   label { display: block; margin: 10px 0; }
-  input, select { width: 100%; padding: 8px; }
+  input { width: 100%; padding: 8px; } /* Usunięto select, bo nie używany */
   .result { text-align: center; margin-top: 20px; }
 </style>

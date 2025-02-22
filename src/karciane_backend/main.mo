@@ -79,46 +79,46 @@ actor Karciane_backend {
   };
 
   public func updateBridgeGame(pin : Text, contract : Nat, tricks : Nat, suit : Text, beforeParty : Bool, afterParty : Bool) : async Text {
-    let game = gameMap.get(pin);
-    switch (game) {
-      case null { return "PIN " # pin # " nie istnieje."; };
-      case (?#Bridge(currentGame)) {
-        let updatedGame : BridgeGameData = {
-          contract = contract;
-          tricks = tricks;
-          suit = suit;
-          beforeParty = beforeParty;
-          afterParty = afterParty;
-        };
-        gameMap.put(pin, #Bridge(updatedGame));
-        return "Dane brydża dla PIN-u " # pin # " zaktualizowane.";
+  let game = gameMap.get(pin);
+  switch (game) {
+    case null { return "PIN " # pin # " nie istnieje."; };
+    case (?#Bridge(_)) { // Zastąp currentGame na _
+      let updatedGame : BridgeGameData = {
+        contract = contract;
+        tricks = tricks;
+        suit = suit;
+        beforeParty = beforeParty;
+        afterParty = afterParty;
       };
-      case _ { return "PIN " # pin # " nie jest grą w brydża."; };
+      gameMap.put(pin, #Bridge(updatedGame));
+      return "Dane brydża dla PIN-u " # pin # " zaktualizowane.";
     };
+    case _ { return "PIN " # pin # " nie jest grą w brydża."; };
   };
+};
 
-  public func updateCanastaGame(pin : Text, redThrees : Nat, canastas : Nat, cleanCanastas : Nat, dirtyCanastas : Nat, cardsPoints : Nat, meldPoints : Nat, finalPoints : Nat, onTable : Bool, finished : Bool) : async Text {
-    let game = gameMap.get(pin);
-    switch (game) {
-      case null { return "PIN " # pin # " nie istnieje."; };
-      case (?#Canasta(currentGame)) {
-        let updatedGame : CanastaGameData = {
-          redThrees = redThrees;
-          canastas = canastas;
-          cleanCanastas = cleanCanastas;
-          dirtyCanastas = dirtyCanastas;
-          cardsPoints = cardsPoints;
-          meldPoints = meldPoints;
-          finalPoints = finalPoints;
-          onTable = onTable;
-          finished = finished;
-        };
-        gameMap.put(pin, #Canasta(updatedGame));
-        return "Dane kanasty dla PIN-u " # pin # " zaktualizowane.";
+public func updateCanastaGame(pin : Text, redThrees : Nat, canastas : Nat, cleanCanastas : Nat, dirtyCanastas : Nat, cardsPoints : Nat, meldPoints : Nat, finalPoints : Nat, onTable : Bool, finished : Bool) : async Text {
+  let game = gameMap.get(pin);
+  switch (game) {
+    case null { return "PIN " # pin # " nie istnieje."; };
+    case (?#Canasta(_)) { // Zastąp currentGame na _
+      let updatedGame : CanastaGameData = {
+        redThrees = redThrees;
+        canastas = canastas;
+        cleanCanastas = cleanCanastas;
+        dirtyCanastas = dirtyCanastas;
+        cardsPoints = cardsPoints;
+        meldPoints = meldPoints;
+        finalPoints = finalPoints;
+        onTable = onTable;
+        finished = finished;
       };
-      case _ { return "PIN " # pin # " nie jest grą w kanastę."; };
+      gameMap.put(pin, #Canasta(updatedGame));
+      return "Dane kanasty dla PIN-u " # pin # " zaktualizowane.";
     };
+    case _ { return "PIN " # pin # " nie jest grą w kanastę."; };
   };
+};
 
   public query func getGame(pin : Text) : async ?Game {
     return gameMap.get(pin);

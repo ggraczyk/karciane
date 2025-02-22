@@ -6,8 +6,8 @@
 <h1>Gry karciane</h1>
 <p>Twój PIN: {pin}</p>
 <form method="POST" action="?/selectGame">
-  <label>Wybierz grę:</label>
-  <select name="gameType">
+  <label for="gameType">Wybierz grę:</label>
+  <select name="gameType" id="gameType">
     <option value="bridge">Brydż</option>
     <option value="canasta">Kanasta</option>
   </select>
