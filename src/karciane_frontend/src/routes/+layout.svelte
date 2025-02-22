@@ -1,12 +1,16 @@
-
-
 <nav>
 	<a href="/kanasta">Kanasta</a>
   <a href="/bridge">Brydż</a>
 	<a href="/about">Admin</a>
 </nav>
 
-<body></body>
+<body>
+<script>
+  import {globalPIN} from '/';
+</script>
+
+
+</body>
 
 
 <slot></slot>

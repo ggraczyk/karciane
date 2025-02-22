@@ -95,7 +95,10 @@ public query func readHands(): async[Hand]{
     // hands.reverse<Hand> (hands);
     // return List.toArray(hands);
     return Array.reverse(List.toArray(hands));
-  };
+//    let all=Array.reverse(List.toArray(hands));
+//    let filtrowane = Array.filter<Text>(all, gamePin);
+//    return filtrowane;
+    };
 
   public func addHand(ns : Int16, we : Int16) : async[Hand]{
     counter := counter + 1;
