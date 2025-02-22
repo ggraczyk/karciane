@@ -1,127 +1,125 @@
-import Int16 "mo:base/Int16";
-import List "mo:base/List";
-//import Hash "mo:base/Hash";
-import Array "mo:base/Array";
+import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
-import Int8 "mo:base/Int8";
-import Bool "mo:base/Bool";
-//import Option "mo:base/Option";
+import Nat "mo:base/Nat";
 
-actor {
-//tylko PIN
-
-stable var gamePin: Text = "";
-
-  public func addPin(pin : Text) : async Text{
-    gamePin := pin;
-    return "W ramach aktualnej sesji posługuj się pinem " # gamePin;
+actor Karciane {
+  type Game = {
+    #Bridge : BridgeGameData;
+    #Canasta : CanastaGameData;
   };
 
-
-
-
-//brydżowe
-type Game = {
-  pin : Text;
-  id : Int16;
-  side : Text;
-  contractName : Text; // club,diamond,heart,spade
-  contractVol : Int8; //1-7 
-  tricks : Int8;
- // overtricks : Int8;
- // undertrics : Int8;
-  doubled : Bool;
-  redoubled : Bool;
-  pc : Int8;
-};
-
-stable var b_hands = List.nil<Game>();
-stable var b_counter: Int16 = 0;
-
-
-
-public query func b_readHands(): async[Game]{
-    return Array.reverse(List.toArray(b_hands));
+  type BridgeGameData = {
+    contract: Nat;
+    tricks: Nat;
+    suit: Text;
+    beforeParty: Bool;
+    afterParty: Bool;
   };
 
-  public func b_addHand(s : Text, n : Text, v : Int8, t : Int8,  d : Bool, rd : Bool, m : Int8) : async[Game]{
-  // public func b_addHand(conName : Text, conVol : Int8, t : Int8,  d : ?Bool, rd : ?Bool) : async[Game]{
-    b_counter := b_counter + 1;
-    let b_hand : Game = {pin = gamePin; 
-                         id = b_counter; 
-                         side = s;
-                         contractName = n; 
-                         contractVol = v; 
-                         tricks = t; 
-                      //   overtricks = if (t - ( 6 + v ) > 0)  {t - ( 6 + v )} else 0 ;  
-                      //   undertrics = if ( ( 6 + v ) - t > 0)  {( 6 + v ) - t} else 0;
-                         doubled = d; //Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
-                         redoubled = rd; //Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
-                         pc = m;
-                         };
-    b_hands := List.push(b_hand, b_hands);
-     return Array.reverse(List.toArray(b_hands));
+  type CanastaGameData = {
+    redThrees: Nat;
+    canastas: Nat;
+    cleanCanastas: Nat;
+    dirtyCanastas: Nat;
+    cardsPoints: Nat;
+    meldPoints: Nat;
+    finalPoints: Nat;
+    onTable: Bool;
+    finished: Bool;
   };
 
-  public func b_resetHand() : async Text{
-    b_hands := List.nil<Game>();
-    b_counter:=0;
-     return "Nowa gra";
+  stable var games : [(Text, Game)] = [];
+  var gameMap = HashMap.HashMap<Text, Game>(10, Text.equal, Text.hash);
+
+  system func preupgrade() {
+    games := gameMap.entries();
   };
 
-  // public query func greet(pair1 : Text, pair2 : Text) : async Text {
-  //   return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
-  // };
-
-  //   public  func zapisz(pair1 : Text, pair2 : Text) : async Text {
-  //   return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
-  // };
-///////////////////////////////////////////////////////////////////////////////////////
-//kanaściane
-///////////////////////////////////////////////////////////////////////////////////////
-type Hand = {
-    pin : Text;
-    id : Int16;
-    ns : Int16;
-    we : Int16;
+  system func postupgrade() {
+    gameMap := HashMap.fromIter<Text, Game>(games.vals(), 10, Text.equal, Text.hash);
   };
 
-stable var hands = List.nil<Hand>();
-stable var counter: Int16 = 0;
-
-
-
-public query func readHands(): async[Hand]{
-    // hands.reverse<Hand> (hands);
-    // return List.toArray(hands);
-    return Array.reverse(List.toArray(hands));
-//    let all=Array.reverse(List.toArray(hands));
-//    let filtrowane = Array.filter<Text>(all, gamePin);
-//    return filtrowane;
+  public func addGame(pin : Text, gameType : Text) : async Text {
+    let existingGame = gameMap.get(pin);
+    switch (existingGame) {
+      case (?_) { return "PIN " # pin # " już istnieje."; };
+      case null {
+        switch (gameType) {
+          case ("bridge") {
+            let initialGame : BridgeGameData = {
+              contract = 0;
+              tricks = 0;
+              suit = "trefl";
+              beforeParty = false;
+              afterParty = false;
+            };
+            gameMap.put(pin, #Bridge(initialGame));
+            return "PIN " # pin # " dodany dla brydża.";
+          };
+          case ("canasta") {
+            let initialGame : CanastaGameData = {
+              redThrees = 0;
+              canastas = 0;
+              cleanCanastas = 0;
+              dirtyCanastas = 0;
+              cardsPoints = 0;
+              meldPoints = 0;
+              finalPoints = 0;
+              onTable = false;
+              finished = false;
+            };
+            gameMap.put(pin, #Canasta(initialGame));
+            return "PIN " # pin # " dodany dla kanasty.";
+          };
+          case _ { return "Nieprawidłowy typ gry."; };
+        };
+      };
     };
-
-  public func addHand(ns : Int16, we : Int16) : async[Hand]{
-    counter := counter + 1;
-    let hand : Hand = {pin=gamePin; id = counter; ns = ns; we = we};
-    hands := List.push(hand, hands);
-     return Array.reverse(List.toArray(hands));
   };
 
-  public func resetHand() : async Text{
-    hands := List.nil<Hand>();
-     return "Nowa gra";
+  public func updateBridgeGame(pin : Text, contract : Nat, tricks : Nat, suit : Text, beforeParty : Bool, afterParty : Bool) : async Text {
+    let game = gameMap.get(pin);
+    switch (game) {
+      case null { return "PIN " # pin # " nie istnieje."; };
+      case (?#Bridge(currentGame)) {
+        let updatedGame : BridgeGameData = {
+          contract = contract;
+          tricks = tricks;
+          suit = suit;
+          beforeParty = beforeParty;
+          afterParty = afterParty;
+        };
+        gameMap.put(pin, #Bridge(updatedGame));
+        return "Dane brydża dla PIN-u " # pin # " zaktualizowane.";
+      };
+      case _ { return "PIN " # pin # " nie jest grą w brydża."; };
+    };
   };
 
-  public query func greet(pair1 : Text, pair2 : Text) : async Text {
-    return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
+  public func updateCanastaGame(pin : Text, redThrees : Nat, canastas : Nat, cleanCanastas : Nat, dirtyCanastas : Nat, cardsPoints : Nat, meldPoints : Nat, finalPoints : Nat, onTable : Bool, finished : Bool) : async Text {
+    let game = gameMap.get(pin);
+    switch (game) {
+      case null { return "PIN " # pin # " nie istnieje."; };
+      case (?#Canasta(currentGame)) {
+        let updatedGame : CanastaGameData = {
+          redThrees = redThrees;
+          canastas = canastas;
+          cleanCanastas = cleanCanastas;
+          dirtyCanastas = dirtyCanastas;
+          cardsPoints = cardsPoints;
+          meldPoints = meldPoints;
+          finalPoints = finalPoints;
+          onTable = onTable;
+          finished = finished;
+        };
+        gameMap.put(pin, #Canasta(updatedGame));
+        return "Dane kanasty dla PIN-u " # pin # " zaktualizowane.";
+      };
+      case _ { return "PIN " # pin # " nie jest grą w kanastę."; };
+    };
   };
 
-  public query func getPins() : async Text {
-    return "piny gier - " # gamePin # "!";
-  };
-
-
-    public  func zapisz(pair1 : Text, pair2 : Text) : async Text {
-    return "ostatni wynik - " # pair1 # ":" # pair2 # "!";
+  public query func getGame(pin : Text) : async ?Game {
+    return gameMap.get(pin);
   };
 };

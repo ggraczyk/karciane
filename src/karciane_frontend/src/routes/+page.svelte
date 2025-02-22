@@ -1,28 +1,22 @@
 <script>
-import { backend } from "$lib/canisters";
+  export let data;
+  let pin = data.pin;
+</script>
 
-let values = {};
-let globalPIN = "";
-
-async function submitHandler() {
-    await   backend.addPin(values.pin).then((response) => {
-        globalPIN = response;
-           }
-         )
-}
-;
-</script>    
-
-Graj i wygrywaj !!!
-
-podaj swój pin do gry:
-
-<form action="#" on:submit|preventDefault={submitHandler}>
-<input id="pin" alt="pin" type="text" bind:value={values.pin} style="height:28px;font-size:12pt;width:98px"/> 
-
-
-<div><button type="submit">Dodaj PIN</button></div>
-
+<h1>Gry karciane</h1>
+<p>Twój PIN: {pin}</p>
+<form method="POST" action="?/selectGame">
+  <label>Wybierz grę:</label>
+  <select name="gameType">
+    <option value="bridge">Brydż</option>
+    <option value="canasta">Kanasta</option>
+  </select>
+  <button type="submit">Rozpocznij</button>
 </form>
 
-{globalPIN}
+<style>
+  h1 { font-size: 2em; text-align: center; }
+  form { max-width: 300px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+  label { display: block; margin-bottom: 10px; }
+  select, button { width: 100%; padding: 8px; margin-top: 5px; }
+</style>
