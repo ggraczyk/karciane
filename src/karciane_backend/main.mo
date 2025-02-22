@@ -1,6 +1,7 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
+import Iter "mo:base/Iter"; // Dodajemy import Iter
 
 actor Karciane_backend {
   type Game = {
@@ -32,7 +33,7 @@ actor Karciane_backend {
   var gameMap = HashMap.HashMap<Text, Game>(10, Text.equal, Text.hash);
 
   system func preupgrade() {
-    games := gameMap.entries();
+    games := Iter.toArray(gameMap.entries()); // Konwersja iteratora na tablicę
   };
 
   system func postupgrade() {
