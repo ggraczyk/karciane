@@ -17,3 +17,5 @@ export const actions = {
     throw redirect(302, `/${gameType}?pin=${pin}`);
   }
 };
+
+export const prerender = false; // Wy³¹cz prerendering dla tej strony

@@ -1,5 +1,5 @@
 <nav>
-	<a href="/kanasta">Kanasta</a>
+	<a href="/canasta">Kanasta</a>
   <a href="/bridge">Brydż</a>
 	<a href="/about">Admin</a>
 </nav>
