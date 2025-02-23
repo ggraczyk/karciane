@@ -9,6 +9,7 @@ dotenv.config({ path: '../../.env' });
 export default defineConfig({
   build: {
     emptyOutDir: true,
+    target: 'esnext', // Dodane dla kompatybilnoœci
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -35,7 +36,7 @@ export default defineConfig({
       {
         find: "declarations",
         replacement: fileURLToPath(
-          new URL("../declarations", import.meta.url)
+          new URL("../../declarations", import.meta.url) // Poprawione na ../../, bo config jest w src/karciane_frontend/
         ),
       },
     ],
