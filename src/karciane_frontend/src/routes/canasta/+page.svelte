@@ -1,6 +1,6 @@
 <script>
   import { Actor, HttpAgent } from '@dfinity/agent';
-  import { idlFactory } from '../../declarations/karciane_backend';// Poprawiona ścieżka
+  import { idlFactory } from 'declarations/karciane_backend';
   import { onMount } from 'svelte';
 
   export let data;
