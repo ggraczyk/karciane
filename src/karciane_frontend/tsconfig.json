@@ -1,4 +1,4 @@
-echo '{
+{
   "compilerOptions": {
     "allowJs": true,
     "checkJs": false,
@@ -20,4 +20,4 @@ echo '{
   },
   "include": ["src/**/*", "../declarations/**/*"],
   "exclude": ["node_modules", ".svelte-kit"]
-}' > tsconfig.json
+}
