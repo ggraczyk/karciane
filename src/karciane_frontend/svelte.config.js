@@ -12,9 +12,8 @@ const config = {
       strict: true,
     }),
     prerender: {
-      enabled: false, // Wy³¹cz prerendering dla strony z akcjami
+      enabled: false,
     },
-    csr: true, // W³¹cz Client-Side Rendering
   },
   preprocess: vitePreprocess()
 };
