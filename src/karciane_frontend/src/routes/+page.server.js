@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 export const load = ({ cookies }) => {
   let pin = cookies.get('game_pin');
   if (!pin) {
-    pin = 'pin-' + Math.random().toString(36).substring(2, 15);
+    pin = '' + Math.random().toString(36).substring(2, 5);
     cookies.set('game_pin', pin, { path: '/', maxAge: 60 * 60 * 24 * 30 });
   }
   return { pin };

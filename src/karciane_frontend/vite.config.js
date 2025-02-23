@@ -6,7 +6,11 @@ export default defineConfig({
   plugins: [sveltekit()],
   resolve: {
     alias: {
-      "declarations": path.resolve(__dirname, '/mnt/c/prywatne/krypto/icp/karciane/src/declarations'),
+      "declarations": path.resolve(__dirname, '../../src/declarations'),
     },
+  },
+  define: {
+    'process.env': '{}', // Polyfill dla process.env
+    'process': '{}',     // Polyfill dla ca³ego obiektu process
   },
 });
