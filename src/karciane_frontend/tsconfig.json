@@ -1,24 +1,23 @@
-{
-    "compilerOptions": {
-    "verbatimModuleSyntax": true,
-    "importsNotUsedAsValues": "remove",
-    "preserveValueImports": false,
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+echo '{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "declarations/*": ["../declarations/*"]
+    },
     "types": ["vite/client"]
   },
-  "include": ["src"]
-}
+  "include": ["src/**/*", "../declarations/**/*"],
+  "exclude": ["node_modules", ".svelte-kit"]
+}' > tsconfig.json
