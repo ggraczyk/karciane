@@ -3,8 +3,20 @@
   import { idlFactory } from 'declarations/karciane_backend';
   import { onMount } from 'svelte';
 
-  export let data;
-  let pin = data.pin;
+  export let data; // Domyślnie data może być undefined w podtrasach
+  let pin = data?.pin; // Użyj optional chaining, jeśli data nie istnieje
+  if (!pin) {
+    // Pobierz pin z query string
+    const url = new URL(window.location.href);
+    pin = url.searchParams.get('pin');
+    if (!pin) {
+      // Fallback: pobierz pin z ciasteczek
+      pin = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('game_pin='))
+        ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+    }
+  }
   let actor;
   let message = '';
   let gameData = null;

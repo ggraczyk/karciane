@@ -11,6 +11,6 @@ export default defineConfig({
   },
   define: {
     'process.env': '{}', // Polyfill dla process.env
-    'process': '{}',     // Polyfill dla ca³ego obiektu process
+
   },
 });
