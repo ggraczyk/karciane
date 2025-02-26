@@ -18,12 +18,6 @@
   if (!pin) {
     const url = new URL(window.location.href);
     pin = url.searchParams.get('pin');
-    if (!pin) {
-      pin = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('game_pin='))
-        ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-    }
   }
 
   let values = {};
@@ -59,52 +53,53 @@
    let greeting = "";
    let wyniki = [] ;
    let idh = 0;
-   const hands =([{id: 1, dealer: 'N', vul:'---', para:'NS'},
-                  {id: 2, dealer: 'E', vul:'NS', para:'WE'},
-                  {id: 3, dealer: 'S', vul:'WE', para:'NS'},
-                  {id: 4, dealer: 'W', vul:'obie', para:'WE'},
-                  {id: 5, dealer: 'N', vul:'NS', para:'NS'},
-                  {id: 6, dealer: 'E', vul:'WE', para:'WE'},
-                  {id: 7, dealer: 'S', vul:'obie', para:'NS'},
-                  {id: 8, dealer: 'W', vul:'---', para:'WE'},
+   const hands =([{id: 1, dealer: 'N', vul:'NS'},
+                  {id: 2, dealer: 'E', vul:'WE'},
+                  {id: 3, dealer: 'S', vul:'obie'},
+                  {id: 4, dealer: 'W', vul:'---'},
+                  {id: 5, dealer: 'N', vul:'NS'},
+                  {id: 6, dealer: 'E', vul:'WE'},
+                  {id: 7, dealer: 'S', vul:'obie'},
+                  {id: 8, dealer: 'W', vul:'---'},
 
    ] )
 
-   onMount(async () => {
-    if (!pin) {
-      const url = new URL(window.location.href);
-      pin = url.searchParams.get('pin');
-      if (!pin) {
-        pin = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('game_pin='))
-          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-    }
-    const agent = new HttpAgent({ host: 'http://localhost:4943' });
-    if (agent.isLocal()) { agent.fetchRootKey(); }
-    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
-    await actor.addGame(pin, 'bridge');
-    await fetchGameData();
-  }}
-);
+//    onMount(async () => {
+//     if (!pin) {
+//       const url = new URL(window.location.href);
+//       pin = url.searchParams.get('pin');
+//       if (!pin) {
+//         pin = document.cookie
+//           .split('; ')
+//           .find(row => row.startsWith('game_pin='))
+//           ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+//     }
+//     const agent = new HttpAgent({ host: 'http://localhost:4943' });
+//     if (agent.isLocal()) { agent.fetchRootKey(); }
+//     actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+//     await actor.addGame(pin, 'bridge');
+//     await fetchGameData();
+//   }
+// }
+// );
 
-  async function fetchGameData() {
-    const result = await actor.getGame(pin);
-    if (result && 'Bridge' in result) {
-      gameData = result.Bridge;
-      contract = gameData.contract;
-      tricks = gameData.tricks;
-      suit = gameData.suit;
-      beforeParty = gameData.beforeParty;
-      afterParty = gameData.afterParty;
-      calculateScore();
-    }
-  }
+  // async function fetchGameData() {
+  //   const result = await actor.getGame(pin);
+  //   if (result && 'Bridge' in result) {
+  //     gameData = result.Bridge;
+  //     contract = gameData.contract;
+  //     tricks = gameData.tricks;
+  //     suit = gameData.suit;
+  //     beforeParty = gameData.beforeParty;
+  //     afterParty = gameData.afterParty;
+  //     calculateScore();
+  //   }
+  // }
 
-  async function updateGame() {
-    message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
-    await fetchGameData();
-  }
+  // async function updateGame() {
+  //   message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
+  //   await fetchGameData();
+  // }
 
 
 
@@ -117,7 +112,15 @@
     
     )};
 
-function count_milton(id, side, v, con , t, double, redouble, PC  ){ 
+  //  record {id=5; pc=33; pin=""; doubled=false; tricks=12; side="NS"; contractName="♥"; contractVol=6; redoubled=false}
+function count_milton(id, side, v, con , t, double, redouble, PC , vulnerable ){ 
+  // id  kolejny element iterowanej tablicy - techniczny wykorzystany w linijce idh=id |0 ;
+  // pc -le punktów do przeliczania IMP
+  //pin w tym miejscu niepotrzebny
+  //dobuble i redoubled kontra/rekontra boolean
+  //vulnerable  tu trzeba przekazać czy true/false czy poPartii
+
+
   let score = 0;
   let extraNT = 0;
   let bonus = 0;
@@ -149,6 +152,11 @@ function count_milton(id, side, v, con , t, double, redouble, PC  ){
 
  sumScore = (score * (v) ) + extraNT + bonus - penalty;
   idh=id |0 ;
+
+//premie szlemik/szlem
+if (con === 6) sumScore += vulnerable ? 750 : 500;
+if (con === 7) sumScore += vulnerable ? 1500 : 1000;
+
    return sumScore};
 
 
@@ -160,9 +168,9 @@ async function czytajWyniki() {
                           sumaNS = 0;
                           sumaWE = 0;
         for (let i=0;i<wyniki.length; i++) {
-          if (wyniki[i].side == "NS") {sumaNS += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc  )};
-          if (wyniki[i].side == "WE") {sumaWE += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc  )};
-	      };
+          if (wyniki[i].side == "NS") {sumaNS += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc ,  wyniki[i].vul )};
+          if (wyniki[i].side == "WE") {sumaWE += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc ,  wyniki[i].vul )};
+        };
         blokujDodaj=false;
   }
   
@@ -174,7 +182,9 @@ async function czytajWyniki() {
 		try {
 		//	await schema.validate(values, { abortEarly: false });
 				errors = {};
-       backend.b_addHand(side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0 ).then((response) => {
+        vulnerable = false;
+        if (hands[idh].vul == side )  vulnerable = true;
+       backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -196,12 +206,12 @@ async function czytajWyniki() {
 
 
   //$:  console.log(JSON.stringify(wyniki.toString(), null, 2));
-
+ 
 </script>
 
 <main>
-  
-  Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh+1].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh+1].vul}</span> <br/>
+
+  Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh].vul}</span> <br/>
   Kontrakt: <br/>
 
 
@@ -301,8 +311,7 @@ Lew:
                    {:else}--- 
                    {/if} </span>
             <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
-            <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc)} </span>
-
+            <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc, element.vul)} </span>
         </div>
         
       {/each}
@@ -315,7 +324,7 @@ Lew:
 
   </section>
 
-dla pinu {pin}
+ 
   <span >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelNS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelWE}</span>
 
 
@@ -330,7 +339,7 @@ dla pinu {pin}
   </div>
   <br />
 
-  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj </button>
+  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj PIN {pin} </button>
   {#if sumaNS>=10000 || sumaWE >=10000}
   <div><button on:click={reset} >restart gry </button></div>
 {:else}

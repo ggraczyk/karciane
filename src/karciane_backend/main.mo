@@ -10,7 +10,7 @@ import Bool "mo:base/Bool";
 actor {
 //tylko PIN
 
-stable var gamePin: Text = "";
+//stable var gamePin: Text = "";
 
 
 //brydżowe
@@ -37,7 +37,7 @@ public query func b_readHands(): async[Game]{
     return Array.reverse(List.toArray(b_hands));
   };
 
-  public func b_addHand(s : Text, n : Text, v : Int8, t : Int8,  d : Bool, rd : Bool, m : Int8) : async[Game]{
+  public func b_addHand(gamePin : Text, s : Text, n : Text, v : Int8, t : Int8,  d : Bool, rd : Bool, m : Int8, vulnerable : Bool) : async[Game]{
   // public func b_addHand(conName : Text, conVol : Int8, t : Int8,  d : ?Bool, rd : ?Bool) : async[Game]{
     b_counter := b_counter + 1;
     let b_hand : Game = {pin = gamePin; 
@@ -51,6 +51,7 @@ public query func b_readHands(): async[Game]{
                          doubled = d; //Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
                          redoubled = rd; //Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
                          pc = m;
+                         vulnerable = vulnerable
                          };
     b_hands := List.push(b_hand, b_hands);
      return Array.reverse(List.toArray(b_hands));
@@ -93,7 +94,7 @@ public query func readHands(): async[Hand]{
 //    return filtrowane;
     };
 
-  public func addHand(ns : Int16, we : Int16) : async[Hand]{
+  public func addHand(ns : Int16, we : Int16, gamePin : Text) : async[Hand]{
     counter := counter + 1;
     let hand : Hand = {pin=gamePin; id = counter; ns = ns; we = we};
     hands := List.push(hand, hands);
@@ -110,7 +111,7 @@ public query func readHands(): async[Hand]{
   };
 
   public query func getPins() : async Text {
-    return "piny gier - " # gamePin # "!";
+    return "piny gier -   TODO  !";
   };
 
 

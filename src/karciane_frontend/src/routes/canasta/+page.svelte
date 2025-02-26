@@ -13,53 +13,47 @@
   let message = '';
   let gameData = null;
 
-  onMount(async () => {
-    if (!pin) {
-      const url = new URL(window.location.href);
-      pin = url.searchParams.get('pin');
-      if (!pin) {
-        pin = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('game_pin='))
-          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-    }
-    const agent = new HttpAgent({ host: 'http://localhost:4943' });
-    if (agent.isLocal()) { agent.fetchRootKey(); }
-    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
-    await actor.addGame(pin, 'bridge');
-    await fetchGameData();
-  }}
-);
+//   onMount(async () => {
+//     if (!pin) {
+//       const url = new URL(window.location.href);
+//       pin = url.searchParams.get('pin');
+//       if (!pin) {
+//         pin = document.cookie
+//           .split('; ')
+//           .find(row => row.startsWith('game_pin='))
+//           ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+//     }
+//     const agent = new HttpAgent({ host: 'http://localhost:4943' });
+//     if (agent.isLocal()) { agent.fetchRootKey(); }
+//     actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+//     await actor.addGame(pin, 'bridge');
+//     await fetchGameData();
+//   }}
+// );
 
-  async function fetchGameData() {
-    const result = await actor.getGame(pin);
-    if (result && 'Bridge' in result) {
-      gameData = result.Bridge;
-      contract = gameData.contract;
-      tricks = gameData.tricks;
-      suit = gameData.suit;
-      beforeParty = gameData.beforeParty;
-      afterParty = gameData.afterParty;
-      calculateScore();
-    }
-  }
+  // async function fetchGameData() {
+  //   const result = await actor.getGame(pin);
+  //   if (result && 'Bridge' in result) {
+  //     gameData = result.Bridge;
+  //     contract = gameData.contract;
+  //     tricks = gameData.tricks;
+  //     suit = gameData.suit;
+  //     beforeParty = gameData.beforeParty;
+  //     afterParty = gameData.afterParty;
+  //     calculateScore();
+  //   }
+  // }
 
-  async function updateGame() {
-    message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
-    await fetchGameData();
-  }
+  // async function updateGame() {
+  //   message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
+  //   await fetchGameData();
+  // }
 
 
 
   if (!pin) {
     const url = new URL(window.location.href);
     pin = url.searchParams.get('pin');
-    if (!pin) {
-      pin = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('game_pin='))
-        ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-    }
   }
 
   // const urlParams = new URLSearchParams(window.location.search);
@@ -86,24 +80,24 @@
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
 
-  onMount(async () => {
-    if (!pin) {
-      const url = new URL(window.location.href);
-      pin = url.searchParams.get('pin');
-      if (!pin) {
-        // Fallback: pobierz pin z ciasteczek
-        pin = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('game_pin='))
-          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-      }
-    }
-    const agent = new HttpAgent({ host: 'http://localhost:4943' });
-    if (agent.isLocal()) { agent.fetchRootKey(); }
-    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
-    await actor.addGame(pin, 'canasta');
-    await fetchGameData();
-  });
+  // onMount(async () => {
+  //   if (!pin) {
+  //     const url = new URL(window.location.href);
+  //     pin = url.searchParams.get('pin');
+  //     if (!pin) {
+  //       // Fallback: pobierz pin z ciasteczek
+  //       pin = document.cookie
+  //         .split('; ')
+  //         .find(row => row.startsWith('game_pin='))
+  //         ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+  //     }
+  //   }
+  //   const agent = new HttpAgent({ host: 'http://localhost:4943' });
+  //   if (agent.isLocal()) { agent.fetchRootKey(); }
+  //   actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+  //   await actor.addGame(pin, 'canasta');
+  //   await fetchGameData();
+  // });
 
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
@@ -166,7 +160,7 @@ async function czytajWyniki() {
       
       if (minusNS) {minNS=-1}
       if (minusWE) {minWE=-1}      
-      backend.addHand(minNS * pair1.value , minWE * pair2.value ).then((response) => {
+      backend.addHand(minNS * pair1.value , minWE * pair2.value, pin ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -269,7 +263,7 @@ async function czytajWyniki() {
 </div>
 
 
-  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj  {pin}</button>
+  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj PIN {pin}</button>
   {#if sumaNS>=10000 || sumaWE >=10000}
   <div><button on:click={reset} >restart gry {pin}</button></div>
 {:else}

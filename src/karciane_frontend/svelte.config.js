@@ -9,9 +9,9 @@ const config = {
     adapter: adapter({
       pages: 'dist',
       assets: 'dist',
-      fallback: undefined,
+      fallback: 'index.html', // Pozwól na SPA dla dynamicznych tras
       precompress: false,
-      strict: true,
+      strict: false, // Pozwól na dynamiczne trasy
     }),
   },
 };
