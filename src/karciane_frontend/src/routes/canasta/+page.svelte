@@ -5,6 +5,74 @@
   import { fade, blur, fly, slide, scale, draw , crossfade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
+  import { onMount } from 'svelte';
+  
+  export let data;
+  let pin = data?.pin; // Pobierz pin z data, jeśli istnieje
+  let actor;
+  let message = '';
+  let gameData = null;
+
+  onMount(async () => {
+    if (!pin) {
+      const url = new URL(window.location.href);
+      pin = url.searchParams.get('pin');
+      if (!pin) {
+        pin = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('game_pin='))
+          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+    }
+    const agent = new HttpAgent({ host: 'http://localhost:4943' });
+    if (agent.isLocal()) { agent.fetchRootKey(); }
+    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+    await actor.addGame(pin, 'bridge');
+    await fetchGameData();
+  }}
+);
+
+  async function fetchGameData() {
+    const result = await actor.getGame(pin);
+    if (result && 'Bridge' in result) {
+      gameData = result.Bridge;
+      contract = gameData.contract;
+      tricks = gameData.tricks;
+      suit = gameData.suit;
+      beforeParty = gameData.beforeParty;
+      afterParty = gameData.afterParty;
+      calculateScore();
+    }
+  }
+
+  async function updateGame() {
+    message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
+    await fetchGameData();
+  }
+
+
+
+  if (!pin) {
+    const url = new URL(window.location.href);
+    pin = url.searchParams.get('pin');
+    if (!pin) {
+      pin = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('game_pin='))
+        ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+    }
+  }
+
+  // const urlParams = new URLSearchParams(window.location.search);
+  // const pin = urlParams.has('pin');
+
+  // import { page } from '$app/canasta';
+  // pin = $page.data.pin
+
+  // let pin = url.searchParams.get('pin');
+  // if (!pin) {
+  // //const pin = cook ies.get('game_pin') || 'pin-default'; // Upewnij si?, ?e pin istnieje
+  // const pin = url.searchParams.get('pin');
+  // }
 
   let minusNS = false;
   let minusWE = false;
@@ -18,6 +86,26 @@
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
 
+  onMount(async () => {
+    if (!pin) {
+      const url = new URL(window.location.href);
+      pin = url.searchParams.get('pin');
+      if (!pin) {
+        // Fallback: pobierz pin z ciasteczek
+        pin = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('game_pin='))
+          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+      }
+    }
+    const agent = new HttpAgent({ host: 'http://localhost:4943' });
+    if (agent.isLocal()) { agent.fetchRootKey(); }
+    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+    await actor.addGame(pin, 'canasta');
+    await fetchGameData();
+  });
+
+
   const sleep = ms => new Promise(f => setTimeout(f, ms));
 
     const schema = yup.object().shape({
@@ -30,6 +118,7 @@
   
   let greeting = "";
   let wyniki = [] ;
+  
   
  
    function extractErrors(err) {
@@ -180,11 +269,11 @@ async function czytajWyniki() {
 </div>
 
 
-  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj </button>
+  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj  {pin}</button>
   {#if sumaNS>=10000 || sumaWE >=10000}
-  <div><button on:click={reset} >restart gry </button></div>
+  <div><button on:click={reset} >restart gry {pin}</button></div>
 {:else}
-  <div><button on:click={reset} hidden>restart gry </button></div>
+  <div><button on:click={reset} hidden>restart gry {pin} </button></div>
 {/if}
     
 
@@ -208,46 +297,14 @@ async function czytajWyniki() {
   /* border: 1px solid #222; */
 }
 
-#male {
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.5rem;
-}
 
 #minusy {
   color: #e00b0b;
 }
-#minusyP {
-  background-color: #c2b6f5;
-}
+
 #pierwszyP {
   background-color:rgb(98, 215, 176);
 }
-
-#drugiP {
-  background-color: #9ced9b;
-}
-
-#trzeciP {
-  background-color: #c8cf7b;
-}
-
-#czwartyP {
-  background-color: #e5ca8a;
-}
-
-#piatyP {
-  background-color: #f39b8e;
-}
-
-#wygranyP {
-  animation: blink 1s linear infinite;
-  }
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
-}
-
 
 </style>
  

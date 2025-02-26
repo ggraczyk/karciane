@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import environment from 'vite-plugin-environment';
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config({ path: '../../.env' });
 
@@ -39,5 +40,8 @@ export default defineConfig({
         ),
       },
     ],
+  },
+  define: {
+    'process.env': '{}', // Polyfill dla process.env
   },
 });

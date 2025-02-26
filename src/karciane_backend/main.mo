@@ -12,13 +12,6 @@ actor {
 
 stable var gamePin: Text = "";
 
-  public func addPin(pin : Text) : async Text{
-    gamePin := pin;
-    return "W ramach aktualnej sesji posługuj się pinem " # gamePin;
-  };
-
-
-
 
 //brydżowe
 type Game = {

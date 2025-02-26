@@ -5,7 +5,26 @@
   import { fade, blur, fly, slide, scale, draw , crossfade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
-    import { idlFactory } from "@dfinity/agent/lib/cjs/canisters/management_service";
+  import { onMount } from 'svelte';
+
+  export let data;
+  let pin = data?.pin; // Pobierz pin z query string, jeśli istnieje
+  let actor;
+  let message = '';
+  let gameData = null;
+
+  console.log('debug1:', pin);
+
+  if (!pin) {
+    const url = new URL(window.location.href);
+    pin = url.searchParams.get('pin');
+    if (!pin) {
+      pin = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('game_pin='))
+        ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+    }
+  }
 
   let values = {};
 	let errors = {};
@@ -51,13 +70,41 @@
 
    ] )
 
- 
-  //  function extractErrors(err) {
-	// 	return err.inner.reduce((acc, err) => {
-	// 		return { ...acc, [err.path]: err.message };
-	// 	}, {});
-    
-	// }
+   onMount(async () => {
+    if (!pin) {
+      const url = new URL(window.location.href);
+      pin = url.searchParams.get('pin');
+      if (!pin) {
+        pin = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('game_pin='))
+          ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
+    }
+    const agent = new HttpAgent({ host: 'http://localhost:4943' });
+    if (agent.isLocal()) { agent.fetchRootKey(); }
+    actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
+    await actor.addGame(pin, 'bridge');
+    await fetchGameData();
+  }}
+);
+
+  async function fetchGameData() {
+    const result = await actor.getGame(pin);
+    if (result && 'Bridge' in result) {
+      gameData = result.Bridge;
+      contract = gameData.contract;
+      tricks = gameData.tricks;
+      suit = gameData.suit;
+      beforeParty = gameData.beforeParty;
+      afterParty = gameData.afterParty;
+      calculateScore();
+    }
+  }
+
+  async function updateGame() {
+    message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
+    await fetchGameData();
+  }
 
 
 
@@ -268,7 +315,7 @@ Lew:
 
   </section>
 
-
+dla pinu {pin}
   <span >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelNS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{labelWE}</span>
 
 
@@ -315,17 +362,5 @@ Lew:
   background-color:rgb(98, 215, 176);
   /* border: 1px solid #222; */
 }
-
-
-#wygranyP {
-  animation: blink 1s linear infinite;
-  }
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
-}
-
-
 </style>
  
