@@ -13,7 +13,7 @@
   let message = '';
   let gameData = null;
 
-  console.log('debug1:', pin);
+
 
   if (!pin) {
     const url = new URL(window.location.href);
@@ -22,13 +22,16 @@
 
   let values = {};
 	let errors = {};
+  let suma = 0 ;
   let sumaNS = 0;
   let sumaWE = 0;
+  let sumaIMP=0;
   let blokujDodaj = false;
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
   let double = false;
   let redouble = false;
+  let ileGier=0;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
 
@@ -52,17 +55,18 @@
   
    let greeting = "";
    let wyniki = [] ;
-   let idh = 0;
-   const hands =([{id: 1, dealer: 'N', vul:'NS'},
-                  {id: 2, dealer: 'E', vul:'WE'},
-                  {id: 3, dealer: 'S', vul:'obie'},
-                  {id: 4, dealer: 'W', vul:'---'},
-                  {id: 5, dealer: 'N', vul:'NS'},
-                  {id: 6, dealer: 'E', vul:'WE'},
-                  {id: 7, dealer: 'S', vul:'obie'},
-                  {id: 8, dealer: 'W', vul:'---'},
+   let idh = 1;
+   //na wieczór planujemy 2*4 rozdania z pudełek meczowych o numerach 21-24
+  //  const hands =([{id: 1, dealer: 'N', vul:'NS'},
+  //                 {id: 2, dealer: 'E', vul:'WE'},
+  //                 {id: 3, dealer: 'S', vul:'obie'},
+  //                 {id: 4, dealer: 'W', vul:'---'},
+  //                 {id: 5, dealer: 'N', vul:'NS'},
+  //                 {id: 6, dealer: 'E', vul:'WE'},
+  //                 {id: 7, dealer: 'S', vul:'obie'},
+  //                 {id: 8, dealer: 'W', vul:'---'},
 
-   ] )
+  //  ] )
 
 //    onMount(async () => {
 //     if (!pin) {
@@ -112,65 +116,145 @@
     
     )};
 
-  //  record {id=5; pc=33; pin=""; doubled=false; tricks=12; side="NS"; contractName="♥"; contractVol=6; redoubled=false}
-function count_milton(id, side, v, con , t, double, redouble, PC , vulnerable ){ 
-  // id  kolejny element iterowanej tablicy - techniczny wykorzystany w linijce idh=id |0 ;
-  // pc -le punktów do przeliczania IMP
-  //pin w tym miejscu niepotrzebny
-  //dobuble i redoubled kontra/rekontra boolean
-  //vulnerable  tu trzeba przekazać czy true/false czy poPartii
-
-
-  let score = 0;
-  let extraNT = 0;
-  let bonus = 0;
-  let penalty = 0;
-  let sumScore = 0;
-  let overtricks = t - ( 6 + v ) ;  
-  let undertrics = ( 6 + v ) - t ;
-   
  
- 
-  //ugrana
-  if (overtricks >=0 ){ 
-        if (["♣","♦"].includes(con) ) //"♣","♦","♥","♠","NT"
-         {score = 20}
-        else if (["♥","♠"].includes(con) ) 
-         {score = 30} 
-        else {  //NT
-            score = 30;
-            if (v>=3) {extraNT=10};
-          } 
+ //////////////////////////////////////////////////
+    function count_chicago(
+ //////////////////////////////////////////////////     
+  id,
+  side,
+  contract,
+  suit,
+  tricks,
+  double,
+  redouble,
+  vulnerable,
+  handPoints // Punkty (PC) linii rozgrywającej
+) {
+  let score = 0; // Punktacja Chicago
+  let expectedScore = 0; // Oczekiwany wynik z tabeli
+  let imp = 0; // Punktacja IMP
+  let trickValue = 0;
+  const requiredTricks = 6 + contract;
+  const undertricks = requiredTricks - tricks;
+  const overtricks = tricks - requiredTricks;
 
-         
+  // Oblicz punktację Chicago
+  if (overtricks >= 0) {
+    if (["♣", "♦"].includes(suit)) {
+      trickValue = 20;
+    } else if (["♥", "♠"].includes(suit)) {
+      trickValue = 30;
+    } else { // NT
+      trickValue = 40;
+    }
+
+    let pcScore = suit === 'NT' && tricks > 6 ? 40 + (tricks - 6 - 1) * 30 : trickValue * (tricks - 6);
+    score += pcScore;
+
+    if (pcScore >= 100) {
+      score += vulnerable ? 500 : 300;
+    } else {
+      score += 50;
+    }
+
+    if (contract === 6) score += vulnerable ? 750 : 500;
+    if (contract === 7) score += vulnerable ? 1500 : 1000;
+
+    if (overtricks > 0) {
+      score += overtricks * trickValue * (vulnerable ? 2 : 1);
+    }
+  } else {
+    score = undertricks * (vulnerable ? 100 : 50) * -1;
   }
-  //wpadki
-  else { penalty=50*undertrics};
 
-// nadróbki
- if (overtricks>0) {bonus=(score+extraNT) * overtricks}
+  // Tabela wartości oczekiwanych (expectedScore) dla PC
+  const expectedTable = [
+    { pcMin: 0, pcMax: 15, expectedBefore: 0, expectedAfter: 0 },
+    { pcMin: 16, pcMax: 19, expectedBefore: 0, expectedAfter: 110 },
+    { pcMin: 20, pcMax: 22, expectedBefore: 0, expectedAfter: 110 },
+    { pcMin: 23, pcMax: 25, expectedBefore: 110, expectedAfter: 110 },
+    { pcMin: 26, pcMax: 28, expectedBefore: 110, expectedAfter: 400 },
+    { pcMin: 29, pcMax: 31, expectedBefore: 110, expectedAfter: 400 },
+    { pcMin: 32, pcMax: 34, expectedBefore: 400, expectedAfter: 400 },
+    { pcMin: 35, pcMax: 37, expectedBefore: 400, expectedAfter: 600 },
+    { pcMin: 38, pcMax: Infinity, expectedBefore: 400, expectedAfter: 600 }
+  ];
 
- sumScore = (score * (v) ) + extraNT + bonus - penalty;
-  idh=id |0 ;
+  // Znajdź oczekiwany wynik na podstawie PC i vulnerabilności
+  for (let i = 0; i < expectedTable.length; i++) {
+    const range = expectedTable[i];
+    if (handPoints >= range.pcMin && handPoints <= range.pcMax) {
+      expectedScore = vulnerable ? range.expectedAfter : range.expectedBefore;
+      break;
+    }
+  }
 
-//premie szlemik/szlem
-if (con === 6) sumScore += vulnerable ? 750 : 500;
-if (con === 7) sumScore += vulnerable ? 1500 : 1000;
+  // Oblicz różnicę między wynikiem a oczekiwanym
+  const pointDifference = score - expectedScore;
 
-   return sumScore};
+  // Tabela przeliczeniowa na IMP
+  const impTable = [
+    { diff: 10, imp: 0 },
+    { diff: 40, imp: 1 },
+    { diff: 80, imp: 2 },
+    { diff: 120, imp: 3 },
+    { diff: 160, imp: 4 },
+    { diff: 210, imp: 5 },
+    { diff: 260, imp: 6 },
+    { diff: 310, imp: 7 },
+    { diff: 360, imp: 8 },
+    { diff: 420, imp: 9 },
+    { diff: 490, imp: 10 },
+    { diff: 590, imp: 11 },
+    { diff: 690, imp: 12 },
+    { diff: 790, imp: 13 },
+    { diff: 890, imp: 14 },
+    { diff: 990, imp: 15 },
+    { diff: 1490, imp: 16 },
+    { diff: 1990, imp: 17 },
+    { diff: Infinity, imp: 18 }
+  ];
 
+  // Oblicz IMP na podstawie różnicy punktów
+  for (let i = 0; i < impTable.length; i++) {
+    const range = impTable[i];
+    if (Math.abs(pointDifference) <= range.diff) {
+      imp = pointDifference >= 0 ? range.imp : -range.imp;
+      break;
+    }
+  }
 
+  // Zwróć obiekt z wynikami
+  // return {
+  //   chicagoScore: score, // Punktacja w systemie Chicago
+  //   impScore: imp, // Punktacja IMP
+  //   handPoints: handPoints || 0, // Punkty karne linii rozgrywającej
+  //   expectedScore: expectedScore // Oczekiwany wynik (dla debugowania)
+  // };
+
+//  return score +" : "+imp;
+  return imp;
+
+}
 
 async function czytajWyniki() {
 
   await backend.b_readHands().then((response) => {
-                          wyniki = response;
+                          wyniki = response; 
+                          suma = 0;
                           sumaNS = 0;
                           sumaWE = 0;
+
+
         for (let i=0;i<wyniki.length; i++) {
-          if (wyniki[i].side == "NS") {sumaNS += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc ,  wyniki[i].vul )};
-          if (wyniki[i].side == "WE") {sumaWE += count_milton(wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].double, wyniki[i].redouble, wyniki[i].pc ,  wyniki[i].vul )};
+         // console.log(wyniki[i])
+          sumaIMP +=  count_chicago(wyniki[i].id,wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc);
+          
+          if (wyniki[i].side === "NS") { sumaNS = sumaIMP };
+          if (wyniki[i].side === "WE") { sumaWE = sumaIMP };
+          ileGier += 1;
         };
+
         blokujDodaj=false;
   }
   
@@ -183,7 +267,8 @@ async function czytajWyniki() {
 		//	await schema.validate(values, { abortEarly: false });
 				errors = {};
         vulnerable = false;
-        if (hands[idh].vul == side )  vulnerable = true;
+        console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable);
+       // if (hands[idh].vul === side )  vulnerable = true;
        backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable ).then((response) => {
         greeting = response;
       });
@@ -211,11 +296,22 @@ async function czytajWyniki() {
 
 <main>
 
-  Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh].vul}</span> <br/>
-  Kontrakt: <br/>
 
 
   <form action="#" on:submit|preventDefault={submitHandler}>
+  Założenia:
+
+	<label>		<input			type="radio"			name="vulnerable"			value=false	checked="checked"	/>	</label> przed
+  <label>		<input			type="radio"			name="vulnerable"			value=true		/>	</label> po
+
+<br/>
+  <!-- Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh].vul}</span> <br/> -->
+  Kontrakt: <br/>
+
+
+
+
+
     <!-- TODO zamień na listę  -->
 
 <!-- <input id="contractVol" alt="contractVol" type="text" bind:value={values.contractVol} style="height:28px;font-size:12pt;width:28px"/>
@@ -255,8 +351,8 @@ onchange={() => (contractVol = '')} style="height:30px;font-size:12pt;;width:40p
 			</option>
 		{/each}
 	</select>
-  k<input type="checkbox" bind:checked={double}>
-  r<input type="checkbox" bind:checked={redouble}>
+  k<input type="checkbox" value={double}>
+  r<input type="checkbox" value={redouble}>
 
    <!-- <input id="contractName" size="20.px" alt="contractName" type="text" bind:value={values.contractName} style="height:28px;font-size:11pt;"/>
    -->
@@ -304,15 +400,16 @@ Lew:
       {#each wyniki as element, i (element)}
 
         <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
-          <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span>
-           <span >&nbsp;{element.contractVol}{element.contractName}&nbsp;&nbsp;{element.side}</span>
+          <!-- <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span> -->
+           <span >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
             <span> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
                    {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
                    {:else}--- 
                    {/if} </span>
             <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
-            <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.double,element.redouble,element.pc, element.vul)} </span>
-        </div>
+            <!-- <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable)} </span> -->
+            <span>  {count_chicago(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc)} </span>         
+          </div>
         
       {/each}
 <br />
@@ -340,7 +437,7 @@ Lew:
   <br />
 
   <br />  <button on:click={czytajWyniki} style="align:center">Czytaj PIN {pin} </button>
-  {#if sumaNS>=10000 || sumaWE >=10000}
+  {#if ileGier>8}
   <div><button on:click={reset} >restart gry </button></div>
 {:else}
   <div><button on:click={reset} hidden>restart gry </button></div>

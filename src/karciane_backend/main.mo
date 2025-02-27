@@ -26,6 +26,7 @@ type Game = {
   doubled : Bool;
   redoubled : Bool;
   pc : Int8;
+  vulnerable : Bool;
 };
 
 stable var b_hands = List.nil<Game>();
@@ -51,7 +52,7 @@ public query func b_readHands(): async[Game]{
                          doubled = d; //Option.get(d, false) ;//if (Option.get(d, false)) {d} else false ;
                          redoubled = rd; //Option.get(rd, false) ;// if (Option.get(rd, false)) {rd} else false;
                          pc = m;
-                         vulnerable = vulnerable
+                         vulnerable = vulnerable;
                          };
     b_hands := List.push(b_hand, b_hands);
      return Array.reverse(List.toArray(b_hands));
