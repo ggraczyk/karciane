@@ -26,11 +26,22 @@
   let sumaNS = 0;
   let sumaWE = 0;
   let sumaIMP=0;
-  let blokujDodaj = false;
+  $: blokujDodaj = !(
+    pin &&
+    side &&
+    selectedC &&
+    selectedV &&
+    tricks > 0 &&
+    typeof double === 'boolean' &&
+    typeof redouble === 'boolean' &&
+    values.pc > 0 &&
+    typeof vulnerable === 'boolean'
+  );
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
   let double = false;
   let redouble = false;
+  let vulnerable =false;
   let ileGier=0;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
@@ -43,30 +54,9 @@
   let tricks = 0;
   let pc = 0;
   let miltons = 0;
-  
-  
-    // const schema = yup.object().shape({
-    //   pair1: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
-    //                         "źle!"),
-    //   pair2: yup.string().required("uzupełnij pole").matches(/^[-,0-9]+5$|0$/,
-    //                         "źle!"),
-    // });
-
-  
    let greeting = "";
    let wyniki = [] ;
    let idh = 1;
-   //na wieczór planujemy 2*4 rozdania z pudełek meczowych o numerach 21-24
-  //  const hands =([{id: 1, dealer: 'N', vul:'NS'},
-  //                 {id: 2, dealer: 'E', vul:'WE'},
-  //                 {id: 3, dealer: 'S', vul:'obie'},
-  //                 {id: 4, dealer: 'W', vul:'---'},
-  //                 {id: 5, dealer: 'N', vul:'NS'},
-  //                 {id: 6, dealer: 'E', vul:'WE'},
-  //                 {id: 7, dealer: 'S', vul:'obie'},
-  //                 {id: 8, dealer: 'W', vul:'---'},
-
-  //  ] )
 
 //    onMount(async () => {
 //     if (!pin) {
@@ -225,15 +215,16 @@
   }
 
   // Zwróć obiekt z wynikami
-  // return {
-  //   chicagoScore: score, // Punktacja w systemie Chicago
-  //   impScore: imp, // Punktacja IMP
-  //   handPoints: handPoints || 0, // Punkty karne linii rozgrywającej
-  //   expectedScore: expectedScore // Oczekiwany wynik (dla debugowania)
-  // };
+  return {
+    chicagoScore: score, // Punktacja w systemie Chicago
+    impScore: imp, // Punktacja IMP
+    razem: imp+"("+score+")",
+    handPoints: handPoints || 0, // Punkty karne linii rozgrywającej
+    expectedScore: expectedScore // Oczekiwany wynik (dla debugowania)
+  };
 
-//  return score +" : "+imp;
-  return imp;
+  //return score +" : "+imp;
+  //return imp;
 
 }
 
@@ -248,8 +239,9 @@ async function czytajWyniki() {
 
         for (let i=0;i<wyniki.length; i++) {
          // console.log(wyniki[i])
-          sumaIMP +=  count_chicago(wyniki[i].id,wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc);
           
+          sumaIMP +=  count_chicago(wyniki[i].id,wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
+
           if (wyniki[i].side === "NS") { sumaNS = sumaIMP };
           if (wyniki[i].side === "WE") { sumaWE = sumaIMP };
           ileGier += 1;
@@ -260,14 +252,19 @@ async function czytajWyniki() {
   
 )};
 
+// async function onChange(){
+//    if (pin&& side&& selectedC && selectedV && tricks && pc &&  vulnerable){
+//   blokujDodaj=false;}
+//  }
 
   async function submitHandler() {
     blokujDodaj=true;
+    //console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
 		try {
 		//	await schema.validate(values, { abortEarly: false });
 				errors = {};
-        vulnerable = false;
-        console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable);
+        //vulnerable = false;
+        //console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
        // if (hands[idh].vul === side )  vulnerable = true;
        backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable ).then((response) => {
         greeting = response;
@@ -298,7 +295,7 @@ async function czytajWyniki() {
 
 
 
-  <form action="#" on:submit|preventDefault={submitHandler}>
+  <form action="#" on:submit|preventDefault={submitHandler} >
   Założenia:
 
 	<label>		<input			type="radio"			name="vulnerable"			value=false	checked="checked"	/>	</label> przed
@@ -408,7 +405,7 @@ Lew:
                    {/if} </span>
             <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
             <!-- <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable)} </span> -->
-            <span>  {count_chicago(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc)} </span>         
+            <span>  {count_chicago(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
           </div>
         
       {/each}
