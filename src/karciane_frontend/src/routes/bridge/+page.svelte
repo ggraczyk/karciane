@@ -26,6 +26,7 @@
   let sumaNS = 0;
   let sumaWE = 0;
   let sumaIMP=0;
+  // Reaktywne wyrażenie do aktualizacji blokujDodaj
   $: blokujDodaj = !(
     pin &&
     side &&
@@ -37,13 +38,14 @@
     values.pc > 0 &&
     typeof vulnerable === 'boolean'
   );
+  // Reaktywne wyswietlanie wyniku przed zapisem na blockchain
   $: podgladWyniku = count_chicago( contractVol, contractName ,tricks, double, redouble, vulnerable, values.pc).chicagoScore  
 
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
-  let double = false;
-  let redouble = false;
-  let vulnerable =false;
+  $: double = false;
+  $: redouble = false;
+  $: vulnerable =false;
   let ileGier=0;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
@@ -128,6 +130,16 @@
   const undertricks = requiredTricks - tricks;
   const overtricks = tricks - requiredTricks;
 
+  // Określ mnożnik dla kontry i rekontry
+  let multiplier = 1; // Domyślnie 1 (bez kontry/rekontry)
+  if (double) {
+    multiplier = 2; // Kontra: mnożnik x2
+  }
+  if (redouble) {
+    multiplier = 4; // Rekontra: mnożnik x4
+  }
+
+
   // Oblicz punktację Chicago
   if (overtricks >= 0) {
     if (["♣", "♦"].includes(suit)) {
@@ -138,23 +150,45 @@
       trickValue = 40;
     }
 
+    // Oblicz punktację kontraktową z uwzględnieniem kontry/rekontry
     let pcScore = suit === 'NT' && tricks > 6 ? 40 + (tricks - 6 - 1) * 30 : trickValue * (tricks - 6);
+    pcScore *= multiplier; // Mnożnik za kontrę/rekontrę
     score += pcScore;
 
-    if (pcScore >= 100) {
+    // Premie za dograną
+    if (pcScore * multiplier >= 100) {
       score += vulnerable ? 500 : 300;
     } else {
-      score += 50;
+      score += 50; // Częściówka
     }
 
     if (contract === 6) score += vulnerable ? 750 : 500;
     if (contract === 7) score += vulnerable ? 1500 : 1000;
 
+    // Nadróbki z uwzględnieniem kontry/rekontry
     if (overtricks > 0) {
-      score += overtricks * trickValue * (vulnerable ? 2 : 1);
+      //score += overtricks * trickValue * (vulnerable ? 2 : 1);
+      let overtrickValue = trickValue;
+      if (vulnerable) overtrickValue *= 2; // Mnożnik x2 dla nadróbek, jeśli warta
+      overtrickValue *= multiplier; // Mnożnik za kontrę/rekontrę
+      score += overtricks * overtrickValue;
     }
+    // Wpadki
   } else {
-    score = undertricks * (vulnerable ? 100 : 50) * -1;
+   // score = undertricks * (vulnerable ? 100 : 50) * -1;
+   // Punktacja za wpadki z uwzględnieniem kontry/rekontry
+   let undertrickPenalty = vulnerable ? 100 : 50; // Bazowa kara za lewę
+    undertrickPenalty *= multiplier; // Mnożnik za kontrę/rekontrę
+
+    // Jeśli wpadka większa niż 1 lewa, kolejne lewy mają inną karę
+    if (undertricks > 1) {
+      let firstUndertrickPenalty = undertrickPenalty; // Pierwsza lewa
+      let additionalUndertrickPenalty = multiplier * (vulnerable ? 200 : 100); // Kolejne lewy (200/400 z kontrą, 400/800 z rekontrą)
+      score = firstUndertrickPenalty + (undertricks - 1) * additionalUndertrickPenalty;
+      score *= -1; // Wynik ujemny dla wpadek
+    } else {
+      score = undertricks * undertrickPenalty * -1;
+    }
   }
 
   // Tabela wartości oczekiwanych (expectedScore) dla PC
@@ -267,10 +301,10 @@ async function czytajWyniki() {
         for (let i=0;i<wyniki.length; i++) {
          // console.log(wyniki[i])
           
-          sumaIMP +=  count_chicago( wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
+          sumaIMP =  count_chicago( wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
 
-          if (wyniki[i].side === "NS") { sumaNS = sumaIMP };
-          if (wyniki[i].side === "WE") { sumaWE = sumaIMP };
+          if (wyniki[i].side === "NS") { sumaNS += sumaIMP };
+          if (wyniki[i].side === "WE") { sumaWE += sumaIMP };
           ileGier += 1;
         };
 
@@ -286,14 +320,14 @@ async function czytajWyniki() {
 
   async function submitHandler() {
     blokujDodaj=true;
-    //console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
+    console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
 		try {
 		//	await schema.validate(values, { abortEarly: false });
 				errors = {};
         //vulnerable = false;
         //console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
        // if (hands[idh].vul === side )  vulnerable = true;
-       backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, values.pc | 0,  vulnerable ).then((response) => {
+       backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, values.double, values.redouble, values.pc | 0,  values.vulnerable ).then((response) => {
         greeting = response;
       });
       await sleep(4000);
@@ -428,6 +462,7 @@ Lew:
           <!-- <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span> -->
           {#if vulnerable}
                 <span style="color:red" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
+                  {#if element.double} <span>*</span> {/if}{#if element.redouble} <span>*</span> {/if}
                 <span style="color:red"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
                       {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
                       {:else}--- 
@@ -436,6 +471,7 @@ Lew:
                 <span style="color:red">  {count_chicago( element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
           {:else}
                 <span style="color:blue" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
+                {#if element.double} <span>*</span> {/if}{#if element.redouble} <span>*</span> {/if}
                 <span style="color:blue"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
                       {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
                       {:else}--- 
