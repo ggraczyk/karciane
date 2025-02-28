@@ -37,6 +37,8 @@
     values.pc > 0 &&
     typeof vulnerable === 'boolean'
   );
+  $: podgladWyniku = count_chicago( contractVol, contractName ,tricks, double, redouble, vulnerable, values.pc).chicagoScore  
+
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
   let double = false;
@@ -110,8 +112,6 @@
  //////////////////////////////////////////////////
     function count_chicago(
  //////////////////////////////////////////////////     
-  id,
-  side,
   contract,
   suit,
   tricks,
@@ -159,15 +159,41 @@
 
   // Tabela wartości oczekiwanych (expectedScore) dla PC
   const expectedTable = [
-    { pcMin: 0, pcMax: 15, expectedBefore: 0, expectedAfter: 0 },
-    { pcMin: 16, pcMax: 19, expectedBefore: 0, expectedAfter: 110 },
-    { pcMin: 20, pcMax: 22, expectedBefore: 0, expectedAfter: 110 },
-    { pcMin: 23, pcMax: 25, expectedBefore: 110, expectedAfter: 110 },
-    { pcMin: 26, pcMax: 28, expectedBefore: 110, expectedAfter: 400 },
-    { pcMin: 29, pcMax: 31, expectedBefore: 110, expectedAfter: 400 },
-    { pcMin: 32, pcMax: 34, expectedBefore: 400, expectedAfter: 400 },
-    { pcMin: 35, pcMax: 37, expectedBefore: 400, expectedAfter: 600 },
-    { pcMin: 38, pcMax: Infinity, expectedBefore: 400, expectedAfter: 600 }
+    { pcMin: 0, pcMax: 4, expectedBefore: -1400, expectedAfter: -2100 },
+    { pcMin: 5, pcMax: 5, expectedBefore: -1200, expectedAfter: -1800 },
+    { pcMin: 6, pcMax: 6, expectedBefore: -1000, expectedAfter: -1500 },
+    { pcMin: 7, pcMax: 7, expectedBefore: -900, expectedAfter: -1350 },
+    { pcMin: 8, pcMax: 8, expectedBefore: -700, expectedAfter: -1050 },
+    { pcMin: 9, pcMax: 9, expectedBefore: -600, expectedAfter: -800 },
+    { pcMin: 10, pcMax: 10, expectedBefore: -490, expectedAfter: -690 },
+    { pcMin: 11, pcMax: 11, expectedBefore: -460, expectedAfter: -660 },
+    { pcMin: 12, pcMax: 12, expectedBefore: -430, expectedAfter: -630 },
+    { pcMin: 13, pcMax: 13, expectedBefore: -400, expectedAfter: -600 },
+    { pcMin: 14, pcMax: 14, expectedBefore: -350, expectedAfter: -520 },
+    { pcMin: 15, pcMax: 15, expectedBefore: -300, expectedAfter: -440 },
+    { pcMin: 16, pcMax: 16, expectedBefore: -200, expectedAfter: -290 },
+    { pcMin: 17, pcMax: 17, expectedBefore: -110, expectedAfter: -110 },
+    { pcMin: 18, pcMax: 18, expectedBefore: -70, expectedAfter: -70 },
+    { pcMin: 19, pcMax: 19, expectedBefore: -50, expectedAfter: -50 },
+
+    { pcMin: 20, pcMax: 20, expectedBefore: 0, expectedAfter: 0 },
+    { pcMin: 21, pcMax: 21, expectedBefore: 50, expectedAfter: 50 },
+    { pcMin: 22, pcMax: 22, expectedBefore: 70, expectedAfter: 70 },
+    { pcMin: 23, pcMax: 23, expectedBefore: 110, expectedAfter: 110 },
+    { pcMin: 24, pcMax: 24, expectedBefore: 200, expectedAfter: 290 },
+    { pcMin: 25, pcMax: 25, expectedBefore: 300, expectedAfter: 440 },
+    { pcMin: 26, pcMax: 26, expectedBefore: 350, expectedAfter: 520 },
+    { pcMin: 27, pcMax: 27, expectedBefore: 400, expectedAfter: 600 },
+    { pcMin: 28, pcMax: 28, expectedBefore: 430, expectedAfter: 630 },
+    { pcMin: 29, pcMax: 29, expectedBefore: 460, expectedAfter: 660 },
+    { pcMin: 30, pcMax: 30, expectedBefore: 490, expectedAfter: 690 },
+    { pcMin: 31, pcMax: 31, expectedBefore: 600, expectedAfter: 800 },
+    { pcMin: 32, pcMax: 32, expectedBefore: 700, expectedAfter: 1050 },
+    { pcMin: 33, pcMax: 33, expectedBefore: 900, expectedAfter: 1350 },
+    { pcMin: 34, pcMax: 34, expectedBefore: 1000, expectedAfter: 1500 },
+    { pcMin: 35, pcMax: 35, expectedBefore: 1100, expectedAfter: 1650 },
+    { pcMin: 36, pcMax: 36, expectedBefore: 1200, expectedAfter: 1800 },
+    { pcMin: 37, pcMax: 40, expectedBefore: 1400, expectedAfter: 2100 }
   ];
 
   // Znajdź oczekiwany wynik na podstawie PC i vulnerabilności
@@ -218,7 +244,7 @@
   return {
     chicagoScore: score, // Punktacja w systemie Chicago
     impScore: imp, // Punktacja IMP
-    razem: imp+"("+score+")",
+    razem: imp+" ("+score+")",
     handPoints: handPoints || 0, // Punkty karne linii rozgrywającej
     expectedScore: expectedScore // Oczekiwany wynik (dla debugowania)
   };
@@ -235,19 +261,20 @@ async function czytajWyniki() {
                           suma = 0;
                           sumaNS = 0;
                           sumaWE = 0;
+                          sumaIMP = 0;
 
 
         for (let i=0;i<wyniki.length; i++) {
          // console.log(wyniki[i])
           
-          sumaIMP +=  count_chicago(wyniki[i].id,wyniki[i].side, wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
+          sumaIMP +=  count_chicago( wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
 
           if (wyniki[i].side === "NS") { sumaNS = sumaIMP };
           if (wyniki[i].side === "WE") { sumaWE = sumaIMP };
           ileGier += 1;
         };
 
-        blokujDodaj=false;
+        blokujDodaj=true;
   }
   
 )};
@@ -378,6 +405,7 @@ Lew:
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
     {:else}
+      <br/><span style="color:grey"> {podgladWyniku} </span>
       <div><button type="submit">Dodaj</button></div>
     {/if}
   </form>
@@ -398,14 +426,23 @@ Lew:
 
         <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
           <!-- <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span> -->
-           <span >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
-            <span> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
-                   {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
-                   {:else}--- 
-                   {/if} </span>
-            <span style="font-size:12pt">  [{element.pc}  PC] ->  </span>
-            <!-- <span>   {count_milton(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable)} </span> -->
-            <span>  {count_chicago(element.id,element.side, element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
+          {#if vulnerable}
+                <span style="color:red" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
+                <span style="color:red"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
+                      {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
+                      {:else}--- 
+                      {/if} </span>
+                <span style="font-size:12pt color:red">  [{element.pc}  PC] ->  </span>
+                <span style="color:red">  {count_chicago( element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
+          {:else}
+                <span style="color:blue" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
+                <span style="color:blue"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
+                      {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
+                      {:else}--- 
+                      {/if} </span>
+                <span style="font-size:12pt; color:blue">  [{element.pc}  PC] ->  </span>
+                <span style="color:blue">  {count_chicago( element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
+           {/if}       
           </div>
         
       {/each}
@@ -445,11 +482,7 @@ Lew:
 </main>
 
 <style>
-#zalozenia{
-  background-color:rgb(232, 145, 31);
-  font-size:8pt;
-  justify-content: center;
-}  
+
 #wyniki {
   margin: 5px auto;
   padding: 10px 10px;
