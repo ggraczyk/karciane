@@ -1,9 +1,9 @@
 <script>
- import "../../index.scss";
+  import "../../index.scss";
   import { backend } from "$lib/canisters";
   import * as yup from 'yup';
-  import { fade, blur, fly, slide, scale, draw , crossfade } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+  import { fade, blur, fly, slide, scale, draw, crossfade } from 'svelte/transition';
+  import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
   import { onMount } from 'svelte';
 
@@ -13,482 +13,397 @@
   let message = '';
   let gameData = null;
 
-
-
   if (!pin) {
     const url = new URL(window.location.href);
     pin = url.searchParams.get('pin');
   }
 
-  let values = {};
-	let errors = {};
-  let suma = 0 ;
+  let values = { pc: 0 };
+  let errors = {};
+  let suma = 0;
   let sumaNS = 0;
   let sumaWE = 0;
-  let sumaIMP=0;
-  // Reaktywne wyrażenie do aktualizacji blokujDodaj
+  let sumaIMP = 0;
+  let side = '';
+  let selectedC = '';
+  let selectedV = 0;
+  let contractVol = selectedV;
+  let contractName = selectedC;
+  let tricks = 0;
+  let double = false;
+  let redouble = false;
+  let vulnerable = false;
+  let blokujDodaj = true;
+// Reaktywne wyrażenie do aktualizacji blokujDodaj
   $: blokujDodaj = !(
     pin &&
     side &&
     selectedC &&
-    selectedV &&
+    selectedV > 0 &&
     tricks > 0 &&
     typeof double === 'boolean' &&
     typeof redouble === 'boolean' &&
     values.pc > 0 &&
     typeof vulnerable === 'boolean'
   );
-  // Reaktywne wyswietlanie wyniku przed zapisem na blockchain
-  $: podgladWyniku = count_chicago( contractVol, contractName ,tricks, double, redouble, vulnerable, values.pc).chicagoScore  
+
+  // Reaktywne wyświetlanie wyniku przed zapisem na blockchain
+  $: podgladWyniku = count_chicago(selectedV, selectedC, tricks, double, redouble, vulnerable, values.pc).chicagoScore;
 
   let labelNS = labels.labelNS;
   let labelWE = labels.labelWE;
-  $: double = false;
-  $: redouble = false;
-  $: vulnerable =false;
-  let ileGier=0;
+  let ileGier = 0;
+  let wyniki = [];
+  let greeting = "";
+  //let idh = 1;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
 
-  let side = "";
-  let selectedC = "";
-  let selectedV = 0;
-  let contractName ="";
-  let contractVol ="";
-  let tricks = 0;
-  let pc = 0;
-  let miltons = 0;
-   let greeting = "";
-   let wyniki = [] ;
-   let idh = 1;
+  // Funkcja count_chicago
+  function count_chicago(
+    contract,
+    suit,
+    tricks,
+    double,
+    redouble,
+    vulnerable,
+    handPoints // Punkty (PC) linii rozgrywającej
+  ) {
+    let score = 0;
+    let expectedScore = 0;
+    let imp = 0;
+    let trickValue = 0;
+    const requiredTricks = 6 + contract;
+    const undertricks = requiredTricks - tricks;
+    const overtricks = tricks - requiredTricks;
 
-//    onMount(async () => {
-//     if (!pin) {
-//       const url = new URL(window.location.href);
-//       pin = url.searchParams.get('pin');
-//       if (!pin) {
-//         pin = document.cookie
-//           .split('; ')
-//           .find(row => row.startsWith('game_pin='))
-//           ?.split('=')[1] || 'pin-default'; // Domyślny PIN, jeśli brak
-//     }
-//     const agent = new HttpAgent({ host: 'http://localhost:4943' });
-//     if (agent.isLocal()) { agent.fetchRootKey(); }
-//     actor = Actor.createActor(idlFactory, { agent, canisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai' });
-//     await actor.addGame(pin, 'bridge');
-//     await fetchGameData();
-//   }
-// }
-// );
-
-  // async function fetchGameData() {
-  //   const result = await actor.getGame(pin);
-  //   if (result && 'Bridge' in result) {
-  //     gameData = result.Bridge;
-  //     contract = gameData.contract;
-  //     tricks = gameData.tricks;
-  //     suit = gameData.suit;
-  //     beforeParty = gameData.beforeParty;
-  //     afterParty = gameData.afterParty;
-  //     calculateScore();
-  //   }
-  // }
-
-  // async function updateGame() {
-  //   message = await actor.updateBridgeGame(pin, contract, tricks, suit, beforeParty, afterParty);
-  //   await fetchGameData();
-  // }
-
-
-
-  async function reset() {
-    
-    await backend.b_resetHand().then((response) => {
-        //info = response;
-        czytajWyniki();
+    let multiplier = 1;
+    if (double) {
+      multiplier = 2;
     }
-    
-    )};
-
- 
- //////////////////////////////////////////////////
-    function count_chicago(
- //////////////////////////////////////////////////     
-  contract,
-  suit,
-  tricks,
-  double,
-  redouble,
-  vulnerable,
-  handPoints // Punkty (PC) linii rozgrywającej
-) {
-  let score = 0; // Punktacja Chicago
-  let expectedScore = 0; // Oczekiwany wynik z tabeli
-  let imp = 0; // Punktacja IMP
-  let trickValue = 0;
-  const requiredTricks = 6 + contract;
-  const undertricks = requiredTricks - tricks;
-  const overtricks = tricks - requiredTricks;
-
-  // Określ mnożnik dla kontry i rekontry
-  let multiplier = 1; // Domyślnie 1 (bez kontry/rekontry)
-  if (double) {
-    multiplier = 2; // Kontra: mnożnik x2
-  }
-  if (redouble) {
+    if (redouble) {
     multiplier = 4; // Rekontra: mnożnik x4
-  }
+    }
 
 
   // Oblicz punktację Chicago
-  if (overtricks >= 0) {
-    if (["♣", "♦"].includes(suit)) {
-      trickValue = 20;
-    } else if (["♥", "♠"].includes(suit)) {
-      trickValue = 30;
-    } else { // NT
-      trickValue = 40;
-    }
-
+    if (overtricks >= 0) {
+      if (["♣", "♦"].includes(suit)) {
+        trickValue = 20;
+      } else if (["♥", "♠"].includes(suit)) {
+        trickValue = 30;
+      } else { // NT
+        trickValue = 40;
+      }
+   // Oblicz punktację kontraktową z uwzględnieniem kontry/rekontry
+ 
     // Oblicz punktację kontraktową z uwzględnieniem kontry/rekontry
-    let pcScore = suit === 'NT' && tricks > 6 ? 40 + (tricks - 6 - 1) * 30 : trickValue * (tricks - 6);
-    pcScore *= multiplier; // Mnożnik za kontrę/rekontrę
-    score += pcScore;
+      let pcScore = suit === 'NT' && tricks > 6 ? 40 + (tricks - 6 - 1) * 30 : trickValue * (tricks - 6);
+      let basePcScore = pcScore;
+      pcScore *= multiplier;
+      score += pcScore;
 
     // Premie za dograną
     if (pcScore * multiplier >= 100) {
-      score += vulnerable ? 500 : 300;
-    } else {
-      score += 50; // Częściówka
-    }
+        score += vulnerable ? 500 : 300;
+        if (double) score += 50;
+        if (redouble) score += 100;
+      } else {
+        score += 50; // Częściówka
+      }
 
-    if (contract === 6) score += vulnerable ? 750 : 500;
-    if (contract === 7) score += vulnerable ? 1500 : 1000;
+      if (contract === 6) score += vulnerable ? 750 : 500;
+      if (contract === 7) score += vulnerable ? 1500 : 1000;
 
     // Nadróbki z uwzględnieniem kontry/rekontry
-    if (overtricks > 0) {
+      if (overtricks > 0) {
       //score += overtricks * trickValue * (vulnerable ? 2 : 1);
-      let overtrickValue = trickValue;
+        let overtrickValue = trickValue;
       if (vulnerable) overtrickValue *= 2; // Mnożnik x2 dla nadróbek, jeśli warta
       overtrickValue *= multiplier; // Mnożnik za kontrę/rekontrę
-      score += overtricks * overtrickValue;
-    }
+        score += overtricks * overtrickValue;
+      }
     // Wpadki
-  } else {
-   // score = undertricks * (vulnerable ? 100 : 50) * -1;
+    } else {
+        // score = undertricks * (vulnerable ? 100 : 50) * -1;
    // Punktacja za wpadki z uwzględnieniem kontry/rekontry
-   let undertrickPenalty = vulnerable ? 100 : 50; // Bazowa kara za lewę
-    undertrickPenalty *= multiplier; // Mnożnik za kontrę/rekontrę
 
-    // Jeśli wpadka większa niż 1 lewa, kolejne lewy mają inną karę
-    if (undertricks > 1) {
+      let undertrickPenalty = vulnerable ? 100 : 50;
+      undertrickPenalty *= multiplier;
+   // Jeśli wpadka większa niż 1 lewa, kolejne lewy mają inną karę
+  
+      if (undertricks > 1) {
       let firstUndertrickPenalty = undertrickPenalty; // Pierwsza lewa
       let additionalUndertrickPenalty = multiplier * (vulnerable ? 200 : 100); // Kolejne lewy (200/400 z kontrą, 400/800 z rekontrą)
-      score = firstUndertrickPenalty + (undertricks - 1) * additionalUndertrickPenalty;
+        score = firstUndertrickPenalty + (undertricks - 1) * additionalUndertrickPenalty;
       score *= -1; // Wynik ujemny dla wpadek
-    } else {
-      score = undertricks * undertrickPenalty * -1;
+      } else {
+        score = undertricks * undertrickPenalty * -1;
+      }
     }
-  }
-
   // Tabela wartości oczekiwanych (expectedScore) dla PC
-  const expectedTable = [
-    { pcMin: 0, pcMax: 4, expectedBefore: -1400, expectedAfter: -2100 },
-    { pcMin: 5, pcMax: 5, expectedBefore: -1200, expectedAfter: -1800 },
-    { pcMin: 6, pcMax: 6, expectedBefore: -1000, expectedAfter: -1500 },
-    { pcMin: 7, pcMax: 7, expectedBefore: -900, expectedAfter: -1350 },
-    { pcMin: 8, pcMax: 8, expectedBefore: -700, expectedAfter: -1050 },
-    { pcMin: 9, pcMax: 9, expectedBefore: -600, expectedAfter: -800 },
-    { pcMin: 10, pcMax: 10, expectedBefore: -490, expectedAfter: -690 },
-    { pcMin: 11, pcMax: 11, expectedBefore: -460, expectedAfter: -660 },
-    { pcMin: 12, pcMax: 12, expectedBefore: -430, expectedAfter: -630 },
-    { pcMin: 13, pcMax: 13, expectedBefore: -400, expectedAfter: -600 },
-    { pcMin: 14, pcMax: 14, expectedBefore: -350, expectedAfter: -520 },
-    { pcMin: 15, pcMax: 15, expectedBefore: -300, expectedAfter: -440 },
-    { pcMin: 16, pcMax: 16, expectedBefore: -200, expectedAfter: -290 },
-    { pcMin: 17, pcMax: 17, expectedBefore: -110, expectedAfter: -110 },
-    { pcMin: 18, pcMax: 18, expectedBefore: -70, expectedAfter: -70 },
-    { pcMin: 19, pcMax: 19, expectedBefore: -50, expectedAfter: -50 },
+    const expectedTable = [
+      { pcMin: 0, pcMax: 4, expectedBefore: -1400, expectedAfter: -2100 },
+      { pcMin: 5, pcMax: 5, expectedBefore: -1200, expectedAfter: -1800 },
+      { pcMin: 6, pcMax: 6, expectedBefore: -1000, expectedAfter: -1500 },
+      { pcMin: 7, pcMax: 7, expectedBefore: -900, expectedAfter: -1350 },
+      { pcMin: 8, pcMax: 8, expectedBefore: -700, expectedAfter: -1050 },
+      { pcMin: 9, pcMax: 9, expectedBefore: -600, expectedAfter: -800 },
+      { pcMin: 10, pcMax: 10, expectedBefore: -490, expectedAfter: -690 },
+      { pcMin: 11, pcMax: 11, expectedBefore: -460, expectedAfter: -660 },
+      { pcMin: 12, pcMax: 12, expectedBefore: -430, expectedAfter: -630 },
+      { pcMin: 13, pcMax: 13, expectedBefore: -400, expectedAfter: -600 },
+      { pcMin: 14, pcMax: 14, expectedBefore: -350, expectedAfter: -520 },
+      { pcMin: 15, pcMax: 15, expectedBefore: -300, expectedAfter: -440 },
+      { pcMin: 16, pcMax: 16, expectedBefore: -200, expectedAfter: -290 },
+      { pcMin: 17, pcMax: 17, expectedBefore: -110, expectedAfter: -110 },
+      { pcMin: 18, pcMax: 18, expectedBefore: -70, expectedAfter: -70 },
+      { pcMin: 19, pcMax: 19, expectedBefore: -50, expectedAfter: -50 },
+      { pcMin: 20, pcMax: 20, expectedBefore: 0, expectedAfter: 0 },
+      { pcMin: 21, pcMax: 21, expectedBefore: 50, expectedAfter: 50 },
+      { pcMin: 22, pcMax: 22, expectedBefore: 70, expectedAfter: 70 },
+      { pcMin: 23, pcMax: 23, expectedBefore: 110, expectedAfter: 110 },
+      { pcMin: 24, pcMax: 24, expectedBefore: 200, expectedAfter: 290 },
+      { pcMin: 25, pcMax: 25, expectedBefore: 300, expectedAfter: 440 },
+      { pcMin: 26, pcMax: 26, expectedBefore: 350, expectedAfter: 520 },
+      { pcMin: 27, pcMax: 27, expectedBefore: 400, expectedAfter: 600 },
+      { pcMin: 28, pcMax: 28, expectedBefore: 430, expectedAfter: 630 },
+      { pcMin: 29, pcMax: 29, expectedBefore: 460, expectedAfter: 660 },
+      { pcMin: 30, pcMax: 30, expectedBefore: 490, expectedAfter: 690 },
+      { pcMin: 31, pcMax: 31, expectedBefore: 600, expectedAfter: 800 },
+      { pcMin: 32, pcMax: 32, expectedBefore: 700, expectedAfter: 1050 },
+      { pcMin: 33, pcMax: 33, expectedBefore: 900, expectedAfter: 1350 },
+      { pcMin: 34, pcMax: 34, expectedBefore: 1000, expectedAfter: 1500 },
+      { pcMin: 35, pcMax: 35, expectedBefore: 1100, expectedAfter: 1650 },
+      { pcMin: 36, pcMax: 36, expectedBefore: 1200, expectedAfter: 1800 },
+      { pcMin: 37, pcMax: 40, expectedBefore: 1400, expectedAfter: 2100 }
+    ];
 
-    { pcMin: 20, pcMax: 20, expectedBefore: 0, expectedAfter: 0 },
-    { pcMin: 21, pcMax: 21, expectedBefore: 50, expectedAfter: 50 },
-    { pcMin: 22, pcMax: 22, expectedBefore: 70, expectedAfter: 70 },
-    { pcMin: 23, pcMax: 23, expectedBefore: 110, expectedAfter: 110 },
-    { pcMin: 24, pcMax: 24, expectedBefore: 200, expectedAfter: 290 },
-    { pcMin: 25, pcMax: 25, expectedBefore: 300, expectedAfter: 440 },
-    { pcMin: 26, pcMax: 26, expectedBefore: 350, expectedAfter: 520 },
-    { pcMin: 27, pcMax: 27, expectedBefore: 400, expectedAfter: 600 },
-    { pcMin: 28, pcMax: 28, expectedBefore: 430, expectedAfter: 630 },
-    { pcMin: 29, pcMax: 29, expectedBefore: 460, expectedAfter: 660 },
-    { pcMin: 30, pcMax: 30, expectedBefore: 490, expectedAfter: 690 },
-    { pcMin: 31, pcMax: 31, expectedBefore: 600, expectedAfter: 800 },
-    { pcMin: 32, pcMax: 32, expectedBefore: 700, expectedAfter: 1050 },
-    { pcMin: 33, pcMax: 33, expectedBefore: 900, expectedAfter: 1350 },
-    { pcMin: 34, pcMax: 34, expectedBefore: 1000, expectedAfter: 1500 },
-    { pcMin: 35, pcMax: 35, expectedBefore: 1100, expectedAfter: 1650 },
-    { pcMin: 36, pcMax: 36, expectedBefore: 1200, expectedAfter: 1800 },
-    { pcMin: 37, pcMax: 40, expectedBefore: 1400, expectedAfter: 2100 }
-  ];
-
-  // Znajdź oczekiwany wynik na podstawie PC i vulnerabilności
-  for (let i = 0; i < expectedTable.length; i++) {
-    const range = expectedTable[i];
-    if (handPoints >= range.pcMin && handPoints <= range.pcMax) {
-      expectedScore = vulnerable ? range.expectedAfter : range.expectedBefore;
-      break;
+ // Znajdź oczekiwany wynik na podstawie PC i vulnerabilności
+    for (let i = 0; i < expectedTable.length; i++) {
+      const range = expectedTable[i];
+      if (handPoints >= range.pcMin && handPoints <= range.pcMax) {
+        expectedScore = vulnerable ? range.expectedAfter : range.expectedBefore;
+        break;
+      }
     }
-  }
 
   // Oblicz różnicę między wynikiem a oczekiwanym
-  const pointDifference = score - expectedScore;
+    const pointDifference = score - expectedScore;
 
-  // Tabela przeliczeniowa na IMP
-  const impTable = [
-    { diff: 10, imp: 0 },
-    { diff: 40, imp: 1 },
-    { diff: 80, imp: 2 },
-    { diff: 120, imp: 3 },
-    { diff: 160, imp: 4 },
-    { diff: 210, imp: 5 },
-    { diff: 260, imp: 6 },
-    { diff: 310, imp: 7 },
-    { diff: 360, imp: 8 },
-    { diff: 420, imp: 9 },
-    { diff: 490, imp: 10 },
-    { diff: 590, imp: 11 },
-    { diff: 690, imp: 12 },
-    { diff: 790, imp: 13 },
-    { diff: 890, imp: 14 },
-    { diff: 990, imp: 15 },
-    { diff: 1490, imp: 16 },
-    { diff: 1990, imp: 17 },
-    { diff: Infinity, imp: 18 }
-  ];
+ // Tabela przeliczeniowa na IMP
+    const impTable = [
+      { diff: 10, imp: 0 },
+      { diff: 40, imp: 1 },
+      { diff: 80, imp: 2 },
+      { diff: 120, imp: 3 },
+      { diff: 160, imp: 4 },
+      { diff: 210, imp: 5 },
+      { diff: 260, imp: 6 },
+      { diff: 310, imp: 7 },
+      { diff: 360, imp: 8 },
+      { diff: 420, imp: 9 },
+      { diff: 490, imp: 10 },
+      { diff: 590, imp: 11 },
+      { diff: 690, imp: 12 },
+      { diff: 790, imp: 13 },
+      { diff: 890, imp: 14 },
+      { diff: 990, imp: 15 },
+      { diff: 1490, imp: 16 },
+      { diff: 1990, imp: 17 },
+      { diff: Infinity, imp: 18 }
+    ];
 
   // Oblicz IMP na podstawie różnicy punktów
-  for (let i = 0; i < impTable.length; i++) {
-    const range = impTable[i];
-    if (Math.abs(pointDifference) <= range.diff) {
-      imp = pointDifference >= 0 ? range.imp : -range.imp;
-      break;
+    for (let i = 0; i < impTable.length; i++) {
+      const range = impTable[i];
+      if (Math.abs(pointDifference) <= range.diff) {
+        imp = pointDifference >= 0 ? range.imp : -range.imp;
+        break;
+      }
     }
-  }
 
   // Zwróć obiekt z wynikami
-  return {
+    return {
     chicagoScore: score, // Punktacja w systemie Chicago
     impScore: imp, // Punktacja IMP
     razem: imp+" ("+score+")",
     handPoints: handPoints || 0, // Punkty karne linii rozgrywającej
     expectedScore: expectedScore // Oczekiwany wynik (dla debugowania)
-  };
-
-  //return score +" : "+imp;
-  //return imp;
-
-}
-
-async function czytajWyniki() {
-
-  await backend.b_readHands().then((response) => {
-                          wyniki = response; 
-                          suma = 0;
-                          sumaNS = 0;
-                          sumaWE = 0;
-                          sumaIMP = 0;
-
-
-        for (let i=0;i<wyniki.length; i++) {
-         // console.log(wyniki[i])
-          
-          sumaIMP =  count_chicago( wyniki[i].contractVol, wyniki[i].contractName ,wyniki[i].tricks, wyniki[i].doubled, wyniki[i].redoubled,  wyniki[i].vulnerable, wyniki[i].pc).impScore;
-
-          if (wyniki[i].side === "NS") { sumaNS += sumaIMP };
-          if (wyniki[i].side === "WE") { sumaWE += sumaIMP };
-          ileGier += 1;
-        };
-
-        blokujDodaj=true;
+    };
   }
-  
-)};
 
-// async function onChange(){
-//    if (pin&& side&& selectedC && selectedV && tricks && pc &&  vulnerable){
-//   blokujDodaj=false;}
-//  }
+  async function czytajWyniki() {
+    await backend.b_readHands().then((response) => {
+      wyniki = response;
+      suma = 0;
+      sumaNS = 0;
+      sumaWE = 0;
+      sumaIMP = 0;
+
+      ileGier = wyniki.length;
+      for (let i = 0; i < wyniki.length; i++) {
+        sumaIMP = count_chicago(
+          wyniki[i].contractVol,
+          wyniki[i].contractName,
+          wyniki[i].tricks,
+          wyniki[i].doubled,
+          wyniki[i].redoubled,
+          wyniki[i].vulnerable,
+          wyniki[i].pc
+        ).impScore;
+
+        if (wyniki[i].side === "NS") {
+          sumaNS += sumaIMP;
+        }
+        if (wyniki[i].side === "WE") {
+          sumaWE += sumaIMP;
+        }
+        
+      }
+
+      blokujDodaj = true;
+    });
+  }
+
+  async function reset() {
+    await backend.b_resetHand().then((response) => {
+      czytajWyniki();
+    });
+  }
 
   async function submitHandler() {
-    blokujDodaj=true;
-    console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
-		try {
-		//	await schema.validate(values, { abortEarly: false });
-				errors = {};
-        //vulnerable = false;
-        //console.log('debug1:', pin, side, selectedC , selectedV | 0, tricks | 0, double, redouble, pc | 0,  vulnerable);
-       // if (hands[idh].vul === side )  vulnerable = true;
-       backend.b_addHand(pin, side, selectedC , selectedV | 0, tricks | 0, values.double, values.redouble, values.pc | 0,  values.vulnerable ).then((response) => {
+    blokujDodaj = true;
+   // console.log('debug1:', pin, side, selectedC, selectedV, tricks, double, redouble, values.pc, vulnerable);
+
+    try {
+      errors = {};
+      await backend.b_addHand(pin, side, selectedC, selectedV, tricks, double, redouble, values.pc, vulnerable).then((response) => {
         greeting = response;
       });
       await sleep(4000);
       await czytajWyniki();
-      side=null;
-      selectedC=null;
-      selectedV=null;
-      tricks=null;
-      double=null;
-      redouble=null;
-      values.pc=null;
-  
-		} catch (err) {
-      blokujDodaj=false;
-		//	errors = extractErrors(err);
-		}
 
-	}
+      // Resetuj formularz
+      side = '';
+      selectedC = '';
+      selectedV = 0;
+      contractVol = 0;
+      contractName = '';
+      tricks = 0;
+      double = false;
+      redouble = false;
+      values.pc = 0;
+      vulnerable = false;
+    } catch (err) {
+      blokujDodaj = false;
+      console.error('Błąd przy przesyłaniu formularza:', err);
+    }
+  }
 
-
-  //$:  console.log(JSON.stringify(wyniki.toString(), null, 2));
- 
+  onMount(() => {
+    czytajWyniki();
+  });
 </script>
 
 <main>
+  <form action="#" on:submit|preventDefault={submitHandler}>
+    Założenia:
+    <label>
+      <input type="radio" name="vulnerable" value={false} bind:group={vulnerable} checked /> przed
+    </label>
+    <label>
+      <input type="radio" name="vulnerable" value={true} bind:group={vulnerable} /> po
+    </label>
+    <br>
 
+    Kontrakt: <br/>
+    <select bind:value={side} style="height:30px;font-size:12pt;width:60px">
+      <option value="">Wybierz stronę</option>
+      {#each ["NS", "WE"] as opt}
+        <option value={opt}>{opt}</option>
+      {/each}
+    </select>
 
+    <select bind:value={selectedV} style="height:30px;font-size:12pt;width:40px">
+      <option value={0}>Wybierz kontrakt</option>
+      {#each [1,2,3,4,5,6,7] as vol}
+        <option value={vol}>{vol}</option>
+      {/each}
+    </select>
 
-  <form action="#" on:submit|preventDefault={submitHandler} >
-  Założenia:
+    <select bind:value={selectedC} style="height:30px;font-size:14pt;width:98px">
+      <option value="">Wybierz kolor</option>
+      {#each ["♣", "♦", "♥", "♠", "NT"] as name}
+        <option value={name}>{name}</option>
+      {/each}
+    </select>
 
-	<label>		<input			type="radio"			name="vulnerable"			value=false	checked="checked"	/>	</label> przed
-  <label>		<input			type="radio"			name="vulnerable"			value=true		/>	</label> po
+    <label>k <input type="checkbox" bind:checked={double}></label>
+    <label>r <input type="checkbox" bind:checked={redouble}></label>
+    <br>
 
-<br/>
-  <!-- Rozdaje: <span id="zalozenia" style="font-size:16pt;"> {hands[idh].dealer} </span>po partii: <span id="zalozenia" style="font-size:16pt;">{hands[idh].vul}</span> <br/> -->
-  Kontrakt: <br/>
-
-
-
-
-
-    <!-- TODO zamień na listę  -->
-
-<!-- <input id="contractVol" alt="contractVol" type="text" bind:value={values.contractVol} style="height:28px;font-size:12pt;width:28px"/>
-<span id="error">{#if errors.contractVol}{errors.contractVol}{/if}</span> -->
-
-<select
-bind:value={side}
-onchange={() => (side = '')} style="height:30px;font-size:12pt;;width:60px"
->
-{#each ["NS","WE"] as side}
-  <option value={side}>
-    {side}
-  </option>
-{/each}
-</select>
-
-
-<select
-bind:value={selectedV}
-onchange={() => (contractVol = '')} style="height:30px;font-size:12pt;;width:40px"
->
-{#each [1,2,3,4,5,6,7] as contractVol}
-  <option value={contractVol}>
-    {contractVol}
-  </option>
-{/each}
-</select>
-
-
-    <select
-		bind:value={selectedC}
-		onchange={() => (contractName = '')} style="height:30px;font-size:14pt;width:98px"
-	>
-		{#each ["♣","♦","♥","♠","NT"] as contractName}
-			<option value={contractName}>
-				{contractName}
-			</option>
-		{/each}
-	</select>
-  k<input type="checkbox" value={double}>
-  r<input type="checkbox" value={redouble}>
-
-   <!-- <input id="contractName" size="20.px" alt="contractName" type="text" bind:value={values.contractName} style="height:28px;font-size:11pt;"/>
-   -->
-
-
-   <span id="error">{#if errors.contractVol}{errors.contractVol}{/if}</span> <br />
-
-Lew: 
-   <select
-   bind:value={tricks}
-   onchange={() => (tricks = '')} style="height:28px;font-size:12pt;;width:98px"
-   >
-   {#each [0,1,2,3,4,5,6,7,8,9,10,11,12,13] as tricks}
-     <option value={tricks}>
-       {tricks}
-     </option>
-   {/each}
-   </select>
-<!-- 
-    <input id="tricks" alt="tricks" type="text" bind:value={values.tricks} style="height:28px;font-size:12pt;width=8px"/> -->
-    <span id="error">{#if errors.tricks}{errors.tricks}{/if}</span>
- <br/>
- PC:
- <input id="pc" alt="pc" type="number" bind:value={values.pc} style="height:28px;font-size:12pt;width:98px"/> 
+    <label>Lew:
+      <select bind:value={tricks} style="height:28px;font-size:12pt;width:98px">
+        <option value={0}>Wybierz lewy</option>
+        {#each [0,1,2,3,4,5,6,7,8,9,10,11,12,13] as t}
+          <option value={t}>{t}</option>
+        {/each}
+      </select>
+    </label>
+ 
+    <label>PC:
+      <input id="pc" alt="pc" type="number" bind:value={values.pc} style="height:28px;font-size:12pt;width:98px"/>
+    </label>
 
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
     {:else}
-      <br/><span style="color:grey"> {podgladWyniku} </span>
+      <br/><span style="color:grey">{podgladWyniku}</span>
       <div><button type="submit">Dodaj</button></div>
     {/if}
   </form>
-  <br />
 
-
-
-  <br /> 
-
-
-
-	<section id="wyniki">
-    {#if wyniki.length>0}
-
-
-    <div class= "array" >
-      {#each wyniki as element, i (element)}
-
-        <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
-          <!-- <span id="zalozenia">{hands[element.id].dealer}&nbsp;{hands[element.id].vul}</span> -->
-          {#if vulnerable}
-                <span style="color:red" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
-                  {#if element.double} <span>*</span> {/if}{#if element.redouble} <span>*</span> {/if}
-                <span style="color:red"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
-                      {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
-                      {:else}--- 
-                      {/if} </span>
-                <span style="font-size:12pt color:red">  [{element.pc}  PC] ->  </span>
-                <span style="color:red">  {count_chicago( element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
-          {:else}
-                <span style="color:blue" >{element.side}&nbsp;{element.contractVol}{element.contractName}&nbsp;</span>
-                {#if element.double} <span>*</span> {/if}{#if element.redouble} <span>*</span> {/if}
-                <span style="color:blue"> {#if 6 + element.contractVol - element.tricks > 0} - {6 + element.contractVol - element.tricks} 
-                      {:else if  element.tricks - (6 + element.contractVol)  > 0} + {element.tricks - (6 + element.contractVol)}
-                      {:else}--- 
-                      {/if} </span>
-                <span style="font-size:12pt; color:blue">  [{element.pc}  PC] ->  </span>
-                <span style="color:blue">  {count_chicago( element.contractVol,element.contractName,element.tricks,element.doubled,element.redoubled, element.vulnerable,element.pc).razem} </span>         
-           {/if}       
+  <section id="wyniki">
+    {#if wyniki.length > 0}
+      <div class="array">
+        {#each wyniki as element, i (element)}
+          <div animate:flip="{{ duration: 300 }}" out:scale="{{ duration: 250 }}" in:scale="{{ duration: 1250 }}">
+            {#if element.vulnerable}
+              <span style="color:red">{element.side} {element.contractVol}{element.contractName}</span>
+              {#if element.doubled} <span>*</span> {/if}
+              {#if element.redoubled} <span>*</span> {/if}
+              <span style="color:red">
+                {#if 6 + element.contractVol - element.tricks > 0}
+                  - {6 + element.contractVol - element.tricks}
+                {:else if element.tricks - (6 + element.contractVol) > 0}
+                  + {element.tricks - (6 + element.contractVol)}
+                {:else}
+                  ---
+                {/if}
+              </span>
+              <span style="font-size:12pt;color:red">[{element.pc} PC] -> </span>
+              <span style="color:red">{count_chicago(element.contractVol, element.contractName, element.tricks, element.doubled, element.redoubled, element.vulnerable, element.pc).razem}</span>
+            {:else}
+              <span style="color:blue">{element.side} {element.contractVol}{element.contractName}</span>
+              {#if element.doubled} <span>*</span> {/if}
+              {#if element.redoubled} <span>*</span> {/if}
+              <span style="color:blue">
+                {#if 6 + element.contractVol - element.tricks > 0}
+                  - {6 + element.contractVol - element.tricks}
+                {:else if element.tricks - (6 + element.contractVol) > 0}
+                  + {element.tricks - (6 + element.contractVol)}
+                {:else}
+                  ---
+                {/if}
+              </span>
+              <span style="font-size:12pt;color:blue">[{element.pc} PC] -> </span>
+              <span style="color:blue">{count_chicago(element.contractVol, element.contractName, element.tricks, element.doubled, element.redoubled, element.vulnerable, element.pc).razem}</span>
+            {/if}
           </div>
-        
-      {/each}
-<br />
-
-     </div>  
-
-
+        {/each}
+      </div>
     {/if}
-
   </section>
 
  
@@ -499,40 +414,30 @@ Lew:
     <span id= "minusyP"   >{sumaNS}</span>
 
     ........
-    
-
-    <span id= "PierwszyP"  >{sumaWE}</span>  
-  
+    <span id="PierwszyP">{sumaWE}</span>
   </div>
-  <br />
+  <br>
 
-  <br />  <button on:click={czytajWyniki} style="align:center">Czytaj PIN {pin} </button>
-  {#if ileGier>8}
-  <div><button on:click={reset} >restart gry </button></div>
-{:else}
-  <div><button on:click={reset} hidden>restart gry </button></div>
-{/if}
-    
-
-
+  <button on:click={czytajWyniki} style="align:center">Czytaj PIN {pin}</button>
+  {#if ileGier >= 8}
+    <div><button on:click={reset}>Restart gry</button></div>
+  {:else}
+    <div><button on:click={reset} hidden>Restart gry</button></div>
+  {/if}
 </main>
 
 <style>
+  #wyniki {
+    margin: 5px auto;
+    padding: 10px 10px;
+    border: 1px dashed #222;
+    background-color: antiquewhite;
+    justify-content: center;
+  }
 
-#wyniki {
-  margin: 5px auto;
-  padding: 10px 10px;
-  border: 1px dashed #222;
-  background-color:antiquewhite;
-  justify-content: center;
-}
-
-
-#suma {
-  color: #e00b0b;
-  font-size: 1.8rem;
-  background-color:rgb(98, 215, 176);
-  /* border: 1px solid #222; */
-}
+  #suma {
+    color: #e00b0b;
+    font-size: 1.8rem;
+    background-color: rgb(98, 215, 176);
+  }
 </style>
- 
