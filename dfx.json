@@ -1,21 +1,22 @@
 {
   "canisters": {
     "karciane_backend": {
-      "declarations": {
-        "node_compatibility": true
-      },
       "main": "src/karciane_backend/main.mo",
       "type": "motoko"
     },
     "karciane_frontend": {
-      "dependencies": [
-        "karciane_backend"
-      ],
-      "source": [
-        "src/karciane_frontend/dist"
-      ],
+      "dependencies": ["karciane_backend"],
+      "frontend": {
+        "entrypoint": "src/karciane_frontend/dist/index.html"
+      },
+      "source": ["src/karciane_frontend/dist"],
       "type": "assets",
-      "workspace": "karciane_frontend"
+      "workspace": "karciane_frontend",
+      "build": [
+        "cd src/karciane_frontend",
+        "npm ci",
+        "npm run build"
+      ]
     }
   },
   "defaults": {

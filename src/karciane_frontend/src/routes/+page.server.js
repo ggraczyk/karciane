@@ -1,12 +1,38 @@
-import { redirect, error } from '@sveltejs/kit';
+import { redirect, error, json } from '@sveltejs/kit';
+import { backend } from '$lib/canisters';
 
 //export const load = ({ cookies }) => {
  // let pin = cookies.get('game_pin');
- export const load = ({ url }) => {
-  let pin = url.searchParams.get('pin'); // Pobierz pin z query string
-  return { pin }; // Zwracaj istniej¹cy PIN lub undefined, jeœli brak
 
-};
+
+
+
+//  export const load = ({ url }) => {
+//   let pin = url.searchParams.get('pin'); // Pobierz pin z query string
+//   return { pin }; // Zwracaj istniej¹cy PIN lub undefined, jeœli brak
+// };
+
+export async function load({ url }) {
+  const pin = url.searchParams.get('pin') || 'pin-default';
+  try {
+    const wyniki = await backend.b_readHands();
+    return {
+      pin,
+      wyniki
+    };
+  } catch (err) {
+    console.error('B??d w load:', err);
+    // Zamiast zwraca? b??d, który prowadzi do zap?tlonego od?wie?ania,
+    // zwró? puste wyniki i status b??du
+    return {
+      pin,
+      wyniki: [],
+      error: 'Nie uda?o si? za?adowa? danych z backendu: ' + err.message
+    };
+  }
+}
+
+
 
 export const actions = {
   //selectGameAndPin: async ({ request, cookies }) => {

@@ -6,6 +6,7 @@
   import { flip } from 'svelte/animate';
   import { labels } from '$lib/shared.svelte.js';
   import { onMount } from 'svelte';
+  import { json } from '@sveltejs/kit';
 
   export let data;
   let pin = data?.pin; // Pobierz pin z query string, jeśli istnieje
@@ -56,6 +57,7 @@
   let wyniki = [];
   let greeting = "";
   //let idh = 1;
+  let navigationAttempts = 0;
 
   const sleep = ms => new Promise(f => setTimeout(f, ms));
 
@@ -73,9 +75,9 @@
     let expectedScore = 0;
     let imp = 0;
     let trickValue = 0;
-    const requiredTricks = 6 + contract;
-    const undertricks = requiredTricks - tricks;
-    const overtricks = tricks - requiredTricks;
+    let requiredTricks = 6 + contract;
+    let undertricks = requiredTricks - tricks;
+    let overtricks = tricks - requiredTricks;
 
     let multiplier = 1;
     if (double) {
@@ -87,60 +89,115 @@
 
 
   // Oblicz punktację Chicago
-    if (overtricks >= 0) {
+
       if (["♣", "♦"].includes(suit)) {
         trickValue = 20;
       } else if (["♥", "♠"].includes(suit)) {
         trickValue = 30;
       } else { // NT
-        trickValue = 40;
+        trickValue = 30;  // dodatkowe 10 uwzględnione gdzieś indziej
       }
    // Oblicz punktację kontraktową z uwzględnieniem kontry/rekontry
- 
-    // Oblicz punktację kontraktową z uwzględnieniem kontry/rekontry
-      let pcScore = suit === 'NT' && tricks > 6 ? 40 + (tricks - 6 - 1) * 30 : trickValue * (tricks - 6);
-      let basePcScore = pcScore;
-      pcScore *= multiplier;
-      score += pcScore;
+     if (overtricks >= 0) {
+           score = trickValue * (tricks - 6);   // 30 * (8-1) > 60
+                 if ( suit === 'NT' ) {score +=10;}  // 60+10=70
+                 console.log('score1:',score);
+              // let basePcScore = pcScore;
+              // pcScore *= multiplier; 
+       //       score += pcScore;  //70
+              console.log('score2:',score);
+            // Premie za dograną
+            if (score * multiplier >= 100 && (
+                                            (["♣", "♦"].includes(suit) && contract >=5 ) ||
+                                            (["♥", "♠"].includes(suit) && contract >=4 ) ||
+                                            (["NT"].includes(suit) && contract >=4 ) 
+                                          )     )                          
+              {
+                      score += vulnerable ? 500 : 300;
+                      console.log('score3:',score);
+                      if (double) score += 50;
+                      console.log('score4:',score);
+                      if (redouble) score += 100;
+                      console.log('score5:',score);
+              } 
+              else 
+              { // Częściówka
+                if (redouble) {score += 200;
+                               console.log('score6:',score); 
+                              }  //270
+                 
+                else {
+                      if (double) {score += 100
+                                    console.log('score7:',score);
+                                  }  //170
+                         else score +=50;        //120
+                         console.log('score8a:',score);
+                      }
+              }
 
-    // Premie za dograną
-    if (pcScore * multiplier >= 100) {
-        score += vulnerable ? 500 : 300;
-        if (double) score += 50;
-        if (redouble) score += 100;
-      } else {
-        score += 50; // Częściówka
-      }
 
-      if (contract === 6) score += vulnerable ? 750 : 500;
-      if (contract === 7) score += vulnerable ? 1500 : 1000;
+              // szlemik szlem
+              if (contract === 6) score += vulnerable ? 750 : 500;
+              if (contract === 7) score += vulnerable ? 1500 : 1000;
+              console.log('score8b:',score);
+            // Nadróbki, normalne już uwzględnione wcześniej 
+              if (overtricks > 0) {
+                console.log('score9:',score);
+                if (double || redouble){
+                  console.log('scoreXX  :',score);
+                     score -= overtricks * trickValue; // jeśłi konta/rekontra wycofaj naliczenie standardowe 170-30=140  (40+30+100-30)
+                     score +=  redouble ? 200*overtricks :100*overtricks; //140 + 1*100 = 240
+                      //score += overtricks * trickValue * (vulnerable ? 2 : 1);
+                      console.log('score10  :',score);
+                }
+              }
 
-    // Nadróbki z uwzględnieniem kontry/rekontry
-      if (overtricks > 0) {
-      //score += overtricks * trickValue * (vulnerable ? 2 : 1);
-        let overtrickValue = trickValue;
-      if (vulnerable) overtrickValue *= 2; // Mnożnik x2 dla nadróbek, jeśli warta
-      overtrickValue *= multiplier; // Mnożnik za kontrę/rekontrę
-        score += overtricks * overtrickValue;
-      }
-    // Wpadki
+              console.log('tricks:',tricks,  'trickValue:',trickValue, 'requiredTricks:',requiredTricks, 'overtricks:',overtricks, 'score:',score);
+
+    // /////////////////////////////////  Wpadki ////////////////////////
+                                    //           *       *
+//     Za wpadkę - pierwsza lewa	          5o	100	1oo	200
+
+//     Za wpadkę - druga i trzecia lewa	    50	200	100	300
+//                                          50	200	100	300
+
+//     Za wpadkę - czwarta lewa i pozostałe	5o	300	1oo	300
+//                                          50	300	100	300
+//                                          50	300	100	300
     } else {
-        // score = undertricks * (vulnerable ? 100 : 50) * -1;
-   // Punktacja za wpadki z uwzględnieniem kontry/rekontry
+            if (undertricks>=4) {
+                              score = vulnerable ? -100*(undertricks-3) : -50*(undertricks-3); //TODO ale też 3,2,1 !!!
+                              console.log ('wp1a', undertricks,score);
+                              score = double&&vulnerable ?  score * 3 : score;
+                              console.log ('wp1b', undertricks,score);
+                              score = redouble ?  score * 2 : score;
+                              console.log ('wp1c', undertricks,score);
+                              undertricks = 3;
+            } ;
+            
+            if (undertricks>=2) {
+                              score += vulnerable ? -100*(undertricks-1) : -50*(undertricks-1);   // TODO oddzielnie druga i pierwsza
+                              console.log ('wp2a', undertricks,score);
+                              score = double&&vulnerable ?  score * 3 : score;
+                              console.log ('wp2b', undertricks,score)
+                              score = redouble ?  score * 2 : score;
+                              console.log ('wp2c', undertricks,score);
+                              undertricks = 1;
+            };
+                    
+            if (undertricks===1) {    // jedna jedyna wpaadak
+                              score += vulnerable ? -100 : -50;
+                              console.log ('wp3a', undertricks,score);
+                              score = double ? score *2 : score;
+                              console.log ('w3b', undertricks,score);
+                              score = redouble ? score *2 : score;
+                              console.log ('wp3c', undertricks,score);
+            };
+                            console.log ('------------');
+      };
 
-      let undertrickPenalty = vulnerable ? 100 : 50;
-      undertrickPenalty *= multiplier;
-   // Jeśli wpadka większa niż 1 lewa, kolejne lewy mają inną karę
-  
-      if (undertricks > 1) {
-      let firstUndertrickPenalty = undertrickPenalty; // Pierwsza lewa
-      let additionalUndertrickPenalty = multiplier * (vulnerable ? 200 : 100); // Kolejne lewy (200/400 z kontrą, 400/800 z rekontrą)
-        score = firstUndertrickPenalty + (undertricks - 1) * additionalUndertrickPenalty;
-      score *= -1; // Wynik ujemny dla wpadek
-      } else {
-        score = undertricks * undertrickPenalty * -1;
-      }
-    }
+
+   console.log('score13b  :',score);
   // Tabela wartości oczekiwanych (expectedScore) dla PC
     const expectedTable = [
       { pcMin: 0, pcMax: 4, expectedBefore: -1400, expectedAfter: -2100 },
@@ -190,7 +247,7 @@
 
   // Oblicz różnicę między wynikiem a oczekiwanym
     const pointDifference = score - expectedScore;
-
+    console.log(score,expectedScore, pointDifference);
  // Tabela przeliczeniowa na IMP
     const impTable = [
       { diff: 10, imp: 0 },
@@ -301,9 +358,21 @@
     }
   }
 
+  // onMount(() => {
+  //   czytajWyniki();
+  // });
+
+
   onMount(() => {
+    if (navigationAttempts >= 3) {
+      console.error('Zbyt wiele prób nawigacji, zatrzymuję ładowanie danych.');
+      return;
+    }
+    navigationAttempts += 1;
     czytajWyniki();
   });
+
+
 </script>
 
 <main>
@@ -359,8 +428,8 @@
     {#if blokujDodaj}
       <div><button type="submit" hidden>Dodaj</button></div>
     {:else}
-      <br/><span style="color:grey">{podgladWyniku}</span>
-      <div><button type="submit">Dodaj</button></div>
+      <br/><div style="color:grey">{podgladWyniku}
+      <br/><button type="submit">Dodaj</button></div><br/>
     {/if}
   </form>
 
@@ -385,10 +454,10 @@
               <span style="font-size:12pt;color:red">[{element.pc} PC] -> </span>
               <span style="color:red">{count_chicago(element.contractVol, element.contractName, element.tricks, element.doubled, element.redoubled, element.vulnerable, element.pc).razem}</span>
             {:else}
-              <span style="color:blue">{element.side} {element.contractVol}{element.contractName}</span>
+              <span style="color:black">{element.side} {element.contractVol}{element.contractName}</span>
               {#if element.doubled} <span>*</span> {/if}
               {#if element.redoubled} <span>*</span> {/if}
-              <span style="color:blue">
+              <span style="color:black">
                 {#if 6 + element.contractVol - element.tricks > 0}
                   - {6 + element.contractVol - element.tricks}
                 {:else if element.tricks - (6 + element.contractVol) > 0}
@@ -397,8 +466,8 @@
                   ---
                 {/if}
               </span>
-              <span style="font-size:12pt;color:blue">[{element.pc} PC] -> </span>
-              <span style="color:blue">{count_chicago(element.contractVol, element.contractName, element.tricks, element.doubled, element.redoubled, element.vulnerable, element.pc).razem}</span>
+              <span style="font-size:12pt;color:black">[{element.pc} PC] -> </span>
+              <span style="color:black">{count_chicago(element.contractVol, element.contractName, element.tricks, element.doubled, element.redoubled, element.vulnerable, element.pc).razem}</span>
             {/if}
           </div>
         {/each}

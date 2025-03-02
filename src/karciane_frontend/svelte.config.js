@@ -1,19 +1,21 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-auto';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   kit: {
-    // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-    // If your environment is not supported or you settled on a specific environment, switch out the adapter.
-    // See https://kit.svelte.dev/docs/adapters for more information about adapters.
     adapter: adapter({
       pages: 'dist',
       assets: 'dist',
-      fallback: 'index.html', // Pozwól na SPA dla dynamicznych tras
+      fallback: 'index.html', // Fallback dla SPA
       precompress: false,
-      strict: false, // Pozwól na dynamiczne trasy
+      strict: false // Pozwól na dynamiczne trasy
     }),
-  },
+    paths: {
+      base: '' // Upewnij si?, ?e base path jest pusty lub poprawny
+    },
+    // Wy??cz SSR dla wszystkich tras
+    //prerender: { entries: [] }
+  }
 };
 
 export default config;

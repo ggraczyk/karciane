@@ -1,8 +1,4 @@
 {
-  "karciane_backend": {
-    "ic": "wgcud-dyaaa-aaaan-qznua-cai"
-  },
-  "karciane_frontend": {
-    "ic": "wbdsx-oaaaa-aaaan-qznuq-cai"
-  }
+  "karciane_backend": {},
+  "karciane_frontend": {}
 }
